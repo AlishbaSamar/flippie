@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { formatCurrencyCompact } from "@/lib/format";
 
@@ -97,26 +98,32 @@ export function LineChart({ labels, series, valueFormat = "number", height = 260
           </text>
         ))}
 
-        {series.map((s) => {
+        {series.map((s, seriesIndex) => {
           const points = s.values.map((value, index) => `${xFor(index)},${yFor(value)}`).join(" ");
           const last = s.values.length - 1;
           return (
             <g key={s.key}>
-              <polyline
+              <motion.polyline
                 points={points}
                 fill="none"
                 stroke={s.color}
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1, ease: "easeOut", delay: seriesIndex * 0.15 }}
               />
-              <circle
+              <motion.circle
                 cx={xFor(last)}
                 cy={yFor(s.values[last])}
                 r={4}
                 fill={s.color}
                 stroke="var(--viz-surface)"
                 strokeWidth={2}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 1 + seriesIndex * 0.15 }}
               />
             </g>
           );

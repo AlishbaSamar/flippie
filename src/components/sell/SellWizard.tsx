@@ -1,6 +1,8 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { CATEGORY_LABELS, devicesByCategory } from "@/data/devices";
 import { estimateOffer } from "@/lib/valuation";
 import type {
@@ -88,12 +90,29 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
               {index + 1}
             </span>
             <span className={index <= step ? "text-ink" : ""}>{label}</span>
-            {index < STEP_LABELS.length - 1 && <span className="h-px flex-1 bg-border" />}
+            {index < STEP_LABELS.length - 1 && (
+              <span className="h-px flex-1 bg-border">
+                <motion.span
+                  className="block h-px bg-primary"
+                  initial={false}
+                  animate={{ width: index < step ? "100%" : "0%" }}
+                  transition={{ duration: 0.3 }}
+                />
+              </span>
+            )}
           </li>
         ))}
       </ol>
 
-      <div className="mt-10 rounded-3xl border border-border bg-white p-8 shadow-sm">
+      <div className="mt-10 overflow-hidden rounded-3xl border border-border bg-white p-8 shadow-sm">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
         {step === 0 && (
           <div>
             <h2 className="text-xl font-semibold text-ink">What are you selling?</h2>
@@ -232,7 +251,14 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
             <h2 className="mt-1 text-xl font-semibold text-ink">
               {model.name} · {storage.label}
             </h2>
-            <p className="mt-6 text-5xl font-bold text-primary">€{offer}</p>
+            <motion.p
+              className="mt-6 text-5xl font-bold text-primary"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
+            >
+              €<AnimatedNumber value={offer} duration={0.8} />
+            </motion.p>
             <p className="mt-3 text-sm text-muted">
               This offer is valid for 14 days. Ship it in with a free label and get paid within 2 business days
               of inspection.
@@ -250,6 +276,8 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
             </div>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

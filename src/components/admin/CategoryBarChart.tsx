@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { formatCurrencyCompact } from "@/lib/format";
 import type { CategoryPerformance } from "@/lib/dashboard-analytics";
 
@@ -21,15 +24,15 @@ export function CategoryBarChart({ data }: { data: CategoryPerformance[] }) {
             <span className="text-muted">{entry.units.toLocaleString()} units</span>
           </div>
           <div className="h-6 rounded-full bg-surface-alt">
-            <div
-              className="flex h-6 items-center justify-end rounded-full px-3 text-xs font-semibold text-white"
-              style={{
-                width: `${Math.max(12, (entry.revenue / maxRevenue) * 100)}%`,
-                backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
-              }}
+            <motion.div
+              className="flex h-6 items-center justify-end overflow-hidden rounded-full px-3 text-xs font-semibold text-white"
+              style={{ backgroundColor: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }}
+              initial={{ width: "0%" }}
+              animate={{ width: `${Math.max(12, (entry.revenue / maxRevenue) * 100)}%` }}
+              transition={{ duration: 0.7, ease: "easeOut", delay: index * 0.1 }}
             >
-              {formatCurrencyCompact(entry.revenue)}
-            </div>
+              <span className="whitespace-nowrap">{formatCurrencyCompact(entry.revenue)}</span>
+            </motion.div>
           </div>
         </li>
       ))}

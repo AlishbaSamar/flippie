@@ -13,7 +13,6 @@ import {
   getRevenueTrend,
   getVolumeTrend,
 } from "@/lib/dashboard-analytics";
-import { formatCurrency, formatNumberCompact } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Business dashboard — flippie",
@@ -32,11 +31,11 @@ export default function AdminDashboardPage() {
       <p className="mt-1 text-muted">Purchases, sales, and demand across Europe — last 6 months.</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatTile label="Revenue" value={formatCurrency(kpis.totalRevenue)} />
-        <StatTile label="Devices sold" value={formatNumberCompact(kpis.totalSalesUnits)} />
-        <StatTile label="Devices purchased" value={formatNumberCompact(kpis.totalPurchaseUnits)} />
-        <StatTile label="Pending orders" value={String(kpis.pendingOrders)} />
-        <StatTile label="Listed inventory" value={String(kpis.listedInventory)} />
+        <StatTile label="Revenue" value={kpis.totalRevenue} format="currency" />
+        <StatTile label="Devices sold" value={kpis.totalSalesUnits} format="compact" />
+        <StatTile label="Devices purchased" value={kpis.totalPurchaseUnits} format="compact" />
+        <StatTile label="Pending orders" value={kpis.pendingOrders} />
+        <StatTile label="Listed inventory" value={kpis.listedInventory} />
       </div>
 
       <div className="mt-8">

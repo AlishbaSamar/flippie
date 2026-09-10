@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { formatCurrencyCompact, formatPercent } from "@/lib/format";
 import type { CountryPerformance } from "@/lib/dashboard-analytics";
 
@@ -16,15 +19,18 @@ function GrowthBadge({ growthPct }: { growthPct: number }) {
   );
 }
 
-function CountryRow({ entry, maxRevenue }: { entry: CountryPerformance; maxRevenue: number }) {
+function CountryRow({ entry, maxRevenue, index }: { entry: CountryPerformance; maxRevenue: number; index: number }) {
   const widthPct = Math.max(4, (entry.revenue / maxRevenue) * 100);
   return (
     <li className="flex items-center gap-4">
       <span className="w-28 shrink-0 text-sm font-medium text-ink">{entry.country.name}</span>
       <div className="h-6 flex-1 rounded-full bg-surface-alt">
-        <div
+        <motion.div
           className="h-6 rounded-full"
-          style={{ width: `${widthPct}%`, backgroundColor: "var(--viz-seq-400)" }}
+          style={{ backgroundColor: "var(--viz-seq-400)" }}
+          initial={{ width: "0%" }}
+          animate={{ width: `${widthPct}%` }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: index * 0.04 }}
         />
       </div>
       <span className="w-20 shrink-0 text-right text-sm font-semibold text-ink">
@@ -49,8 +55,8 @@ export function CountryLeaderboard({ data }: { data: CountryPerformance[] }) {
           Revenue by country · this month
         </p>
         <ul className="space-y-3">
-          {data.map((entry) => (
-            <CountryRow key={entry.country.code} entry={entry} maxRevenue={maxRevenue} />
+          {data.map((entry, index) => (
+            <CountryRow key={entry.country.code} entry={entry} maxRevenue={maxRevenue} index={index} />
           ))}
         </ul>
       </div>
