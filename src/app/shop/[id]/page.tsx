@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/shop/AddToCartButton";
 import { DeviceThumbnail } from "@/components/DeviceThumbnail";
-import { findInventoryItem, INVENTORY } from "@/data/inventory";
+import { mapInventoryItem } from "@/lib/db-mappers";
+import { prisma } from "@/lib/prisma";
 import {
   BATTERY_LABELS,
   BODY_LABELS,
@@ -13,13 +14,20 @@ import {
   SCREEN_LABELS,
 } from "@/lib/condition";
 
+export const dynamic = "force-dynamic";
+
 interface ProductPageProps {
   params: Promise<{ id: string }>;
 }
 
+async function loadItem(id: string) {
+  const row = await prisma.inventoryItem.findUnique({ where: { id }, include: { model: true } });
+  return row ? mapInventoryItem(row) : null;
+}
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
-  const item = findInventoryItem(id);
+  const item = await loadItem(id);
   if (!item) return {};
   return {
     title: `${item.model.name} (${item.storage.label}) — flippie`,
@@ -27,13 +35,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-export function generateStaticParams() {
-  return INVENTORY.map((item) => ({ id: item.id }));
-}
-
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const item = findInventoryItem(id);
+  const item = await loadItem(id);
   if (!item) notFound();
 
   const grade = conditionGrade(item.condition);

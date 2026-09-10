@@ -2,23 +2,18 @@
 
 import Link from "next/link";
 import { DeviceThumbnail } from "@/components/DeviceThumbnail";
-import { findInventoryItem } from "@/data/inventory";
 import { conditionGrade } from "@/lib/condition";
-import { useCart } from "@/lib/cart-store";
-import type { InventoryItem } from "@/types/commerce";
+import { useCartItems } from "@/lib/use-cart-items";
 
 export default function CartPage() {
-  const { itemIds, removeItem } = useCart();
-  const items = itemIds
-    .map(findInventoryItem)
-    .filter((item): item is InventoryItem => item !== undefined);
+  const { items, loading, removeItem } = useCartItems();
   const subtotal = items.reduce((sum, item) => sum + item.listPriceEUR, 0);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-14">
       <h1 className="text-3xl font-semibold text-ink">Your cart</h1>
 
-      {items.length === 0 ? (
+      {loading ? null : items.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-border bg-white p-10 text-center">
           <p className="text-muted">Your cart is empty.</p>
           <Link

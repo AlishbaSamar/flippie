@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { CATEGORY_LABELS } from "@/data/devices";
+import { CATEGORY_LABELS } from "@/lib/category-labels";
 import { conditionGrade, ConditionGrade } from "@/lib/condition";
 import { InventoryItem } from "@/types/commerce";
 import type { DeviceCategory } from "@/types/device";

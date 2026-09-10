@@ -1,37 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState, useTransition } from "react";
 import { EU_COUNTRIES } from "@/data/countries";
-import { findInventoryItem } from "@/data/inventory";
+import { placeOrder } from "@/lib/commerce-actions";
+import { useCartItems } from "@/lib/use-cart-items";
 import { useCart } from "@/lib/cart-store";
-import type { InventoryItem } from "@/types/commerce";
 
 export default function CheckoutPage() {
-  const { itemIds, clear } = useCart();
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const { items, loading } = useCartItems();
+  const { clear } = useCart();
+  const [orderIds, setOrderIds] = useState<string[] | null>(null);
   const [country, setCountry] = useState(EU_COUNTRIES[0].code);
+  const [isSubmitting, startSubmit] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  const items = useMemo(
-    () => itemIds.map(findInventoryItem).filter((item): item is InventoryItem => item !== undefined),
-    [itemIds],
-  );
   const total = items.reduce((sum, item) => sum + item.listPriceEUR, 0);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setOrderId(`FL-${Math.floor(100000 + Math.random() * 900000)}`);
-    clear();
+    setError(null);
+    const form = new FormData(event.currentTarget);
+    const customerName = String(form.get("name") ?? "");
+    const customerEmail = String(form.get("email") ?? "");
+    const countryName = EU_COUNTRIES.find((c) => c.code === country)?.name ?? country;
+
+    startSubmit(async () => {
+      try {
+        const result = await placeOrder({
+          itemIds: items.map((item) => item.id),
+          customerName,
+          customerEmail,
+          countryCode: country,
+          countryName,
+        });
+        setOrderIds(result.orderIds);
+        clear();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong placing your order.");
+      }
+    });
   }
 
-  if (orderId) {
+  if (orderIds) {
     return (
       <main className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="text-sm font-semibold tracking-wide text-primary uppercase">Order confirmed</p>
         <h1 className="mt-3 text-3xl font-semibold text-ink">Thank you!</h1>
         <p className="mt-3 text-muted">
-          Order <span className="font-semibold text-ink">{orderId}</span> has been placed. A confirmation email is
-          on its way.
+          Order{" "}
+          <span className="font-semibold text-ink">{orderIds[0].slice(0, 8).toUpperCase()}</span> has been
+          placed. A confirmation email is on its way.
         </p>
         <Link
           href="/shop"
@@ -43,7 +62,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (!loading && items.length === 0) {
     return (
       <main className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="text-muted">Your cart is empty, so there&apos;s nothing to check out.</p>
@@ -86,11 +105,13 @@ export default function CheckoutPage() {
               </select>
             </div>
           </div>
+          {error && <p className="text-sm font-medium text-red-600">{error}</p>}
           <button
             type="submit"
-            className="mt-2 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
+            disabled={isSubmitting || loading || items.length === 0}
+            className="mt-2 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Place order · €{total}
+            {isSubmitting ? "Placing order…" : loading ? "Loading your cart…" : `Place order · €${total}`}
           </button>
         </form>
 

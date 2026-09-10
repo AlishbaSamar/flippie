@@ -1,9 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import { CATEGORY_LABELS, devicesByCategory } from "@/data/devices";
+import { submitPurchase } from "@/app/sell/actions";
+import { CATEGORY_LABELS } from "@/lib/category-labels";
+import { EU_COUNTRIES } from "@/data/countries";
 import { estimateOffer } from "@/lib/valuation";
 import type {
   BatteryHealth,
@@ -45,17 +47,24 @@ const BATTERY_OPTIONS: { value: BatteryHealth; label: string }[] = [
 ];
 
 interface SellWizardProps {
+  allModels: DeviceModel[];
   initialCategory?: DeviceCategory;
 }
 
-export function SellWizard({ initialCategory }: SellWizardProps) {
+export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
   const [step, setStep] = useState(initialCategory ? 1 : 0);
   const [category, setCategory] = useState<DeviceCategory | null>(initialCategory ?? null);
   const [model, setModel] = useState<DeviceModel | null>(null);
   const [storage, setStorage] = useState<StorageOption | null>(null);
   const [condition, setCondition] = useState<Partial<ConditionAnswers>>({});
+  const [country, setCountry] = useState(EU_COUNTRIES[0].code);
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [isSubmitting, startSubmit] = useTransition();
 
-  const models = useMemo(() => (category ? devicesByCategory(category) : []), [category]);
+  const models = useMemo(
+    () => (category ? allModels.filter((m) => m.category === category) : []),
+    [allModels, category],
+  );
 
   const conditionComplete =
     condition.functional && condition.screen && condition.body && condition.battery;
@@ -75,6 +84,24 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
     setModel(null);
     setStorage(null);
     setCondition({});
+    setSubmittedId(null);
+  }
+
+  function acceptOffer() {
+    if (!model || !storage || !conditionComplete || offer === null) return;
+    const countryName = EU_COUNTRIES.find((c) => c.code === country)?.name ?? country;
+    startSubmit(async () => {
+      const result = await submitPurchase({
+        modelId: model.id,
+        storageGb: storage.gb,
+        storageLabel: storage.label,
+        condition: condition as ConditionAnswers,
+        offerEUR: offer,
+        countryCode: country,
+        countryName,
+      });
+      setSubmittedId(result.id);
+    });
   }
 
   return (
@@ -245,7 +272,24 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
           </div>
         )}
 
-        {step === 4 && model && storage && offer !== null && (
+        {step === 4 && model && storage && offer !== null && submittedId && (
+          <div className="text-center">
+            <p className="text-sm font-semibold tracking-wide text-primary uppercase">Submitted</p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">Thanks — we&apos;ve got your device</h2>
+            <p className="mt-3 text-sm text-muted">
+              Reference <span className="font-semibold text-ink">{submittedId.slice(0, 8).toUpperCase()}</span>.
+              We&apos;ll email you a free shipping label — once it&apos;s checked, you&apos;ll be paid €{offer}.
+            </p>
+            <button
+              onClick={restart}
+              className="mt-8 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
+            >
+              Sell another device
+            </button>
+          </div>
+        )}
+
+        {step === 4 && model && storage && offer !== null && !submittedId && (
           <div className="text-center">
             <p className="text-sm font-semibold text-muted">Your instant offer for</p>
             <h2 className="mt-1 text-xl font-semibold text-ink">
@@ -263,9 +307,31 @@ export function SellWizard({ initialCategory }: SellWizardProps) {
               This offer is valid for 14 days. Ship it in with a free label and get paid within 2 business days
               of inspection.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <button className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark">
-                Accept offer &amp; continue
+
+            <div className="mx-auto mt-6 max-w-xs text-left">
+              <label className="text-xs font-semibold tracking-wide text-muted uppercase">
+                Where are you shipping from?
+              </label>
+              <select
+                value={country}
+                onChange={(event) => setCountry(event.target.value)}
+                className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              >
+                {EU_COUNTRIES.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={acceptOffer}
+                disabled={isSubmitting}
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "Submitting…" : "Accept offer & continue"}
               </button>
               <button
                 onClick={restart}

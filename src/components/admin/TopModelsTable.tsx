@@ -1,5 +1,5 @@
 import { formatCurrency } from "@/lib/format";
-import type { ModelPerformance } from "@/data/analytics";
+import type { ModelPerformance } from "@/lib/dashboard-analytics";
 
 export function TopModelsTable({ data }: { data: ModelPerformance[] }) {
   return (
@@ -13,8 +13,8 @@ export function TopModelsTable({ data }: { data: ModelPerformance[] }) {
       </thead>
       <tbody>
         {data.map((entry) => (
-          <tr key={entry.model.id} className="border-b border-border/60 last:border-0">
-            <td className="py-2.5 font-medium text-ink">{entry.model.name}</td>
+          <tr key={entry.modelId} className="border-b border-border/60 last:border-0">
+            <td className="py-2.5 font-medium text-ink">{entry.modelName}</td>
             <td className="py-2.5 text-right text-muted">{entry.unitsSold.toLocaleString()}</td>
             <td className="py-2.5 text-right font-semibold text-ink">{formatCurrency(entry.revenueEUR)}</td>
           </tr>

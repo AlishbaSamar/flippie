@@ -5,12 +5,12 @@ import { InsightBanner } from "@/components/admin/InsightBanner";
 import { LineChart } from "@/components/admin/LineChart";
 import { StatTile } from "@/components/admin/StatTile";
 import { TopModelsTable } from "@/components/admin/TopModelsTable";
-import { TOP_MODELS } from "@/data/analytics";
 import {
   getCategoryPerformance,
   getCountryPerformance,
   getKpis,
   getRevenueTrend,
+  getTopModels,
   getVolumeTrend,
 } from "@/lib/dashboard-analytics";
 
@@ -18,12 +18,17 @@ export const metadata: Metadata = {
   title: "Business dashboard — flippie",
 };
 
-export default function AdminDashboardPage() {
-  const kpis = getKpis();
-  const revenueTrend = getRevenueTrend();
-  const volumeTrend = getVolumeTrend();
-  const countryPerformance = getCountryPerformance();
-  const categoryPerformance = getCategoryPerformance();
+export const dynamic = "force-dynamic";
+
+export default async function AdminDashboardPage() {
+  const [kpis, revenueTrend, volumeTrend, countryPerformance, categoryPerformance, topModels] = await Promise.all([
+    getKpis(),
+    getRevenueTrend(),
+    getVolumeTrend(),
+    getCountryPerformance(),
+    getCategoryPerformance(),
+    getTopModels(),
+  ]);
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -109,7 +114,7 @@ export default function AdminDashboardPage() {
           <p className="font-semibold text-ink">Best-selling models</p>
           <p className="text-sm text-muted">By revenue, last 6 months</p>
           <div className="mt-4">
-            <TopModelsTable data={TOP_MODELS} />
+            <TopModelsTable data={topModels} />
           </div>
         </div>
       </div>

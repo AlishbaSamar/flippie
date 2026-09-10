@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { CATEGORY_LABELS, devicesByCategory } from "@/data/devices";
+import { CATEGORY_LABELS } from "@/lib/category-labels";
+import { mapDeviceModel, toDbCategory } from "@/lib/db-mappers";
+import { prisma } from "@/lib/prisma";
 import type { DeviceCategory } from "@/types/device";
 
 const CATEGORIES: DeviceCategory[] = ["iphone", "ipad", "galaxy-s"];
+
+export const dynamic = "force-dynamic";
 
 const STEPS = [
   {
@@ -19,7 +23,18 @@ const STEPS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const categoryRanges = await Promise.all(
+    CATEGORIES.map(async (category) => {
+      const rows = await prisma.deviceModel.findMany({
+        where: { category: toDbCategory(category) },
+        orderBy: { releaseYear: "asc" },
+      });
+      const models = rows.map(mapDeviceModel);
+      return { category, first: models[0], last: models[models.length - 1] };
+    }),
+  );
+
   return (
     <main>
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
@@ -81,24 +96,19 @@ export default function Home() {
         <h2 className="text-2xl font-semibold text-ink">What are you selling today?</h2>
         <p className="mt-2 text-muted">Choose a category to get your instant quote.</p>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {CATEGORIES.map((category) => {
-            const models = devicesByCategory(category);
-            return (
-              <Link
-                key={category}
-                href={`/sell?category=${category}`}
-                className="group rounded-2xl border border-border bg-white p-6 transition hover:border-primary hover:shadow-md"
-              >
-                <p className="text-lg font-semibold text-ink group-hover:text-primary">
-                  {CATEGORY_LABELS[category]}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {models[0].name} – {models[models.length - 1].name}
-                </p>
-                <p className="mt-4 text-sm font-semibold text-primary">Get a quote →</p>
-              </Link>
-            );
-          })}
+          {categoryRanges.map(({ category, first, last }) => (
+            <Link
+              key={category}
+              href={`/sell?category=${category}`}
+              className="group rounded-2xl border border-border bg-white p-6 transition hover:border-primary hover:shadow-md"
+            >
+              <p className="text-lg font-semibold text-ink group-hover:text-primary">{CATEGORY_LABELS[category]}</p>
+              <p className="mt-1 text-sm text-muted">
+                {first.name} – {last.name}
+              </p>
+              <p className="mt-4 text-sm font-semibold text-primary">Get a quote →</p>
+            </Link>
+          ))}
         </div>
       </section>
     </main>

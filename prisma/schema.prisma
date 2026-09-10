@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DeviceCategory {
+  IPHONE
+  IPAD
+  GALAXY_S
+}
+
+enum InventoryStatus {
+  PROCESSING
+  LISTED
+  RESERVED
+  SOLD
+}
+
+enum PurchaseStatus {
+  SUBMITTED
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model DeviceModel {
+  id             String         @id @default(cuid())
+  category       DeviceCategory
+  name           String
+  releaseYear    Int
+  basePriceEUR   Int
+  storageOptions Json
+  createdAt      DateTime       @default(now())
+
+  inventoryItems InventoryItem[]
+  purchases      Purchase[]
+
+  @@index([category])
+}
+
+model InventoryItem {
+  id               String          @id @default(cuid())
+  model            DeviceModel     @relation(fields: [modelId], references: [id])
+  modelId          String
+  storageGb        Int
+  storageLabel     String
+  condition        Json
+  listPriceEUR     Int
+  status           InventoryStatus @default(LISTED)
+  sourcePurchaseId String?
+  createdAt        DateTime        @default(now())
+
+  orders           Order[]
+
+  @@index([status])
+  @@index([modelId])
+}
+
+model Purchase {
+  id          String         @id @default(cuid())
+  model       DeviceModel    @relation(fields: [modelId], references: [id])
+  modelId     String
+  storageGb   Int
+  storageLabel String
+  condition   Json
+  offerEUR    Int
+  status      PurchaseStatus @default(SUBMITTED)
+  countryCode String
+  countryName String
+  createdAt   DateTime       @default(now())
+
+  @@index([countryCode])
+  @@index([createdAt])
+  @@index([modelId])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId String
+  priceEUR        Int
+  status          OrderStatus   @default(PENDING)
+  countryCode     String
+  countryName     String
+  customerName    String
+  customerEmail   String
+  createdAt       DateTime      @default(now())
+
+  @@index([countryCode])
+  @@index([createdAt])
+}
