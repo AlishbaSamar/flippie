@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { logout } from "@/app/admin/login/actions";
 import { CategoryBarChart } from "@/components/admin/CategoryBarChart";
 import { CountryLeaderboard } from "@/components/admin/CountryLeaderboard";
 import { InsightBanner } from "@/components/admin/InsightBanner";
@@ -32,8 +33,17 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-ink">Business dashboard</h1>
-      <p className="mt-1 text-muted">Purchases, sales, and demand across Europe — last 6 months.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold text-ink">Business dashboard</h1>
+          <p className="mt-1 text-muted">Purchases, sales, and demand across Europe — last 6 months.</p>
+        </div>
+        <form action={logout}>
+          <button type="submit" className="text-sm font-semibold text-muted transition hover:text-ink">
+            Sign out
+          </button>
+        </form>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatTile label="Revenue" value={kpis.totalRevenue} format="currency" />

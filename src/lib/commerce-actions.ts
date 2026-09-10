@@ -31,25 +31,31 @@ export async function placeOrder(input: PlaceOrderInput): Promise<{ orderIds: st
     throw new Error("None of the selected items are available anymore.");
   }
 
-  const orderIds = await prisma.$transaction(async (tx) => {
-    const ids: string[] = [];
-    for (const item of items) {
-      const order = await tx.order.create({
-        data: {
-          inventoryItemId: item.id,
-          priceEUR: item.listPriceEUR,
-          status: "PAID",
-          countryCode: input.countryCode,
-          countryName: input.countryName,
-          customerName: input.customerName,
-          customerEmail: input.customerEmail,
-        },
+  const orderIds = await prisma.$transaction(
+    async (tx) => {
+      const orders = await Promise.all(
+        items.map((item) =>
+          tx.order.create({
+            data: {
+              inventoryItemId: item.id,
+              priceEUR: item.listPriceEUR,
+              status: "PAID",
+              countryCode: input.countryCode,
+              countryName: input.countryName,
+              customerName: input.customerName,
+              customerEmail: input.customerEmail,
+            },
+          }),
+        ),
+      );
+      await tx.inventoryItem.updateMany({
+        where: { id: { in: items.map((item) => item.id) } },
+        data: { status: "SOLD" },
       });
-      await tx.inventoryItem.update({ where: { id: item.id }, data: { status: "SOLD" } });
-      ids.push(order.id);
-    }
-    return ids;
-  });
+      return orders.map((order) => order.id);
+    },
+    { timeout: 15000 },
+  );
 
   return { orderIds };
 }
