@@ -10,6 +10,36 @@
   --color-surface-alt: #f1efe9;
   --color-border: #e4e1d9;
   --color-muted: #6b6875;
+
+  --viz-surface: #faf9f6;
+  --viz-text-primary: #14121f;
+  --viz-text-secondary: #52514e;
+  --viz-text-muted: #898781;
+  --viz-grid: #e4e1d9;
+  --viz-baseline: #c3c2b7;
+
+  --viz-series-1: #2a78d6;
+  --viz-series-2: #eb6834;
+  --viz-series-3: #1baf7a;
+  --viz-series-4: #eda100;
+  --viz-series-5: #e87ba4;
+  --viz-series-6: #008300;
+  --viz-series-7: #4a3aa7;
+  --viz-series-8: #e34948;
+
+  --viz-seq-100: #cde2fb;
+  --viz-seq-200: #9ec5f4;
+  --viz-seq-300: #6da7ec;
+  --viz-seq-400: #3987e5;
+  --viz-seq-500: #256abf;
+  --viz-seq-600: #184f95;
+  --viz-seq-700: #0d366b;
+
+  --viz-good: #0ca30c;
+  --viz-good-text: #006300;
+  --viz-warning: #fab219;
+  --viz-serious: #ec835a;
+  --viz-critical: #d03b3b;
 }
 
 @theme inline {
