@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { CartBadge } from "@/components/CartBadge";
 
 const NAV_LINKS = [
   { href: "/sell", label: "Sell your device" },
   { href: "/shop", label: "Shop refurbished" },
-  { href: "/how-it-works", label: "How it works" },
 ];
 
 export function SiteHeader() {
@@ -23,12 +23,15 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="/sell"
-          className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
-        >
-          Get your quote
-        </Link>
+        <div className="flex items-center gap-3">
+          <CartBadge />
+          <Link
+            href="/sell"
+            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
+          >
+            Get your quote
+          </Link>
+        </div>
       </div>
     </header>
   );

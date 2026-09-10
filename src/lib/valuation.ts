@@ -49,3 +49,11 @@ export function buildQuote(model: DeviceModel, storage: StorageOption, condition
     offerEUR: estimateOffer(model, storage, condition),
   };
 }
+
+const RESALE_MARGIN = 1.35;
+
+/** What we list a refurbished device for, after buying it at the trade-in offer price. */
+export function estimateResalePrice(model: DeviceModel, storage: StorageOption, condition: ConditionAnswers): number {
+  const offer = estimateOffer(model, storage, condition);
+  return Math.round((offer * RESALE_MARGIN) / 5) * 5 - 1;
+}
