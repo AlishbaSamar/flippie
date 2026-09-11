@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CartBadge } from "@/components/CartBadge";
+import { Mascot } from "@/components/Mascot";
 
 const NAV_LINKS = [
   { href: "/sell", label: "Sell your device" },
@@ -11,9 +12,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight text-ink">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
-            F
-          </span>
+          <Mascot size={34} />
           flippie
         </Link>
         <nav className="hidden items-center gap-8 text-sm font-medium text-ink/80 md:flex">
