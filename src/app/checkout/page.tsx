@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { createCheckoutSession } from "@/app/checkout/actions";
 import { EU_COUNTRIES } from "@/data/countries";
-import { placeOrder } from "@/lib/commerce-actions";
 import { useCartItems } from "@/lib/use-cart-items";
-import { useCart } from "@/lib/cart-store";
 
 export default function CheckoutPage() {
   const { items, loading } = useCartItems();
-  const { clear } = useCart();
-  const [orderIds, setOrderIds] = useState<string[] | null>(null);
   const [country, setCountry] = useState(EU_COUNTRIES[0].code);
   const [isSubmitting, startSubmit] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -23,43 +20,28 @@ export default function CheckoutPage() {
     const form = new FormData(event.currentTarget);
     const customerName = String(form.get("name") ?? "");
     const customerEmail = String(form.get("email") ?? "");
+    const shippingAddress = String(form.get("address") ?? "");
+    const city = String(form.get("city") ?? "");
+    const postalCode = String(form.get("postal") ?? "");
     const countryName = EU_COUNTRIES.find((c) => c.code === country)?.name ?? country;
 
     startSubmit(async () => {
       try {
-        const result = await placeOrder({
+        const result = await createCheckoutSession({
           itemIds: items.map((item) => item.id),
           customerName,
           customerEmail,
+          shippingAddress,
+          city,
+          postalCode,
           countryCode: country,
           countryName,
         });
-        setOrderIds(result.orderIds);
-        clear();
+        window.location.href = result.url;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong placing your order.");
+        setError(err instanceof Error ? err.message : "Something went wrong starting checkout.");
       }
     });
-  }
-
-  if (orderIds) {
-    return (
-      <main className="mx-auto max-w-lg px-6 py-24 text-center">
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">Order confirmed</p>
-        <h1 className="mt-3 text-3xl font-semibold text-ink">Thank you!</h1>
-        <p className="mt-3 text-muted">
-          Order{" "}
-          <span className="font-semibold text-ink">{orderIds[0].slice(0, 8).toUpperCase()}</span> has been
-          placed. A confirmation email is on its way.
-        </p>
-        <Link
-          href="/shop"
-          className="mt-8 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
-        >
-          Continue shopping
-        </Link>
-      </main>
-    );
   }
 
   if (!loading && items.length === 0) {

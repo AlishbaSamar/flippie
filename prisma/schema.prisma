@@ -96,8 +96,13 @@ model Order {
   countryName     String
   customerName    String
   customerEmail   String
+  shippingAddress String        @default("")
+  city            String        @default("")
+  postalCode      String        @default("")
+  stripeSessionId String?
   createdAt       DateTime      @default(now())
 
   @@index([countryCode])
   @@index([createdAt])
+  @@index([stripeSessionId])
 }
