@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { logout } from "@/app/admin/login/actions";
 import { CategoryBarChart } from "@/components/admin/CategoryBarChart";
 import { CountryLeaderboard } from "@/components/admin/CountryLeaderboard";
@@ -38,19 +39,27 @@ export default async function AdminDashboardPage() {
           <h1 className="text-3xl font-semibold text-ink">Business dashboard</h1>
           <p className="mt-1 text-muted">Purchases, sales, and demand across Europe — last 6 months.</p>
         </div>
-        <form action={logout}>
-          <button type="submit" className="text-sm font-semibold text-muted transition hover:text-ink">
-            Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-5">
+          <Link href="/admin/purchases" className="text-sm font-semibold text-primary transition hover:text-primary-dark">
+            Purchase queue →
+          </Link>
+          <form action={logout}>
+            <button type="submit" className="text-sm font-semibold text-muted transition hover:text-ink">
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <StatTile label="Revenue" value={kpis.totalRevenue} format="currency" />
         <StatTile label="Devices sold" value={kpis.totalSalesUnits} format="compact" />
         <StatTile label="Devices purchased" value={kpis.totalPurchaseUnits} format="compact" />
         <StatTile label="Pending orders" value={kpis.pendingOrders} />
         <StatTile label="Listed inventory" value={kpis.listedInventory} />
+        <Link href="/admin/purchases">
+          <StatTile label="Awaiting review" value={kpis.purchasesAwaitingReview} />
+        </Link>
       </div>
 
       <div className="mt-8">

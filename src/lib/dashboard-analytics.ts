@@ -39,13 +39,15 @@ function monthKeyFor(date: Date, buckets: MonthBucket[]): string | null {
 }
 
 export async function getKpis() {
-  const [revenueAgg, salesCount, purchaseAgg, pendingOrders, listedInventory] = await Promise.all([
-    prisma.order.aggregate({ _sum: { priceEUR: true } }),
-    prisma.order.count(),
-    prisma.purchase.aggregate({ _sum: { offerEUR: true }, _count: true }),
-    prisma.order.count({ where: { status: "PENDING" } }),
-    prisma.inventoryItem.count({ where: { status: "LISTED" } }),
-  ]);
+  const [revenueAgg, salesCount, purchaseAgg, pendingOrders, listedInventory, purchasesAwaitingReview] =
+    await Promise.all([
+      prisma.order.aggregate({ _sum: { priceEUR: true } }),
+      prisma.order.count(),
+      prisma.purchase.aggregate({ _sum: { offerEUR: true }, _count: true }),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.inventoryItem.count({ where: { status: "LISTED" } }),
+      prisma.purchase.count({ where: { status: { in: ["SUBMITTED", "APPROVED"] } } }),
+    ]);
 
   return {
     totalRevenue: revenueAgg._sum.priceEUR ?? 0,
@@ -54,6 +56,7 @@ export async function getKpis() {
     totalPurchaseSpend: purchaseAgg._sum.offerEUR ?? 0,
     pendingOrders,
     listedInventory,
+    purchasesAwaitingReview,
   };
 }
 
