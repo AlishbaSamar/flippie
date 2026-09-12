@@ -30,11 +30,14 @@ export function Mascot({ size = 40, className }: MascotProps) {
         width="100%"
         height="100%"
         style={{ transformStyle: "preserve-3d", overflow: "visible" }}
-        animate={{ rotateY: [0, 0, 180, 180, 0, 0] }}
+        animate={{
+          rotateY: [0, 0, 180, 180, 0, 0, 0, 0, 0, 0],
+          rotateX: [0, 0, 0, 0, 0, 0, 0, 180, 180, 0],
+        }}
         transition={{
-          duration: 6,
+          duration: 10,
           repeat: Infinity,
-          times: [0, 0.6, 0.72, 0.85, 0.97, 1],
+          times: [0, 0.3, 0.36, 0.46, 0.52, 0.74, 0.8, 0.9, 0.96, 1],
           ease: "easeInOut",
         }}
       >
