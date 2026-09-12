@@ -18,7 +18,11 @@ export function Mascot({ size = 40, className }: MascotProps) {
     <motion.div
       className={className}
       style={{ width: size, height: size, display: "inline-block", perspective: 240 }}
-      animate={{ rotateZ: [0, -6, 6, 0], y: [0, -2, 0, 0] }}
+      animate={{
+        x: [0, -4, 0, 4, 0],
+        y: [0, -4, 0, -4, 0],
+        rotateZ: [0, -6, 0, 6, 0],
+      }}
       transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
     >
       <motion.svg
@@ -26,8 +30,13 @@ export function Mascot({ size = 40, className }: MascotProps) {
         width="100%"
         height="100%"
         style={{ transformStyle: "preserve-3d", overflow: "visible" }}
-        animate={{ rotateY: [0, 0, 360, 360] }}
-        transition={{ duration: 5, repeat: Infinity, times: [0, 0.72, 0.94, 1], ease: "easeInOut" }}
+        animate={{ rotateY: [0, 0, 180, 180, 0, 0] }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          times: [0, 0.6, 0.72, 0.85, 0.97, 1],
+          ease: "easeInOut",
+        }}
       >
         <ellipse cx="36" cy="89" rx="17" ry="3" fill="var(--color-ink)" opacity="0.08" />
 
