@@ -7,6 +7,7 @@ import type { DeviceCategory } from "@/types/device";
 export const metadata: Metadata = {
   title: "Sell your device — flippie",
   description: "Get an instant offer for your iPhone, iPad, or Samsung Galaxy S device.",
+  alternates: { canonical: "/sell" },
 };
 
 export const dynamic = "force-dynamic";

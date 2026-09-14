@@ -2,7 +2,25 @@ import Link from "next/link";
 import { CATEGORY_LABELS } from "@/lib/category-labels";
 import { mapDeviceModel, toDbCategory } from "@/lib/db-mappers";
 import { prisma } from "@/lib/prisma";
+import { SITE_URL } from "@/lib/site-url";
 import type { DeviceCategory } from "@/types/device";
+
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "flippie",
+  url: SITE_URL,
+  description:
+    "flippie buys used iPhones, iPads, and Samsung Galaxy S phones directly from customers across Europe, then resells them as certified refurbished devices.",
+  areaServed: "EU",
+};
+
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "flippie",
+  url: SITE_URL,
+};
 
 const CATEGORIES: DeviceCategory[] = ["iphone", "ipad", "galaxy-s"];
 
@@ -37,6 +55,8 @@ export default async function Home() {
 
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }} />
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="grid items-center gap-12 md:grid-cols-2">
           <div>

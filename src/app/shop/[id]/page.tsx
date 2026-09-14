@@ -3,8 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/shop/AddToCartButton";
 import { DeviceThumbnail } from "@/components/DeviceThumbnail";
-import { mapInventoryItem } from "@/lib/db-mappers";
-import { prisma } from "@/lib/prisma";
 import {
   BATTERY_LABELS,
   BODY_LABELS,
@@ -13,6 +11,9 @@ import {
   GRADE_DESCRIPTIONS,
   SCREEN_LABELS,
 } from "@/lib/condition";
+import { mapInventoryItem } from "@/lib/db-mappers";
+import { prisma } from "@/lib/prisma";
+import { SITE_URL } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { id } = await params;
   const item = await loadItem(id);
   if (!item) return {};
+  const title = `${item.model.name} (${item.storage.label}) — flippie`;
+  const description = `Certified refurbished ${item.model.name}, ${item.storage.label}, ${conditionGrade(item.condition)} condition. €${item.listPriceEUR}.`;
   return {
-    title: `${item.model.name} (${item.storage.label}) — flippie`,
-    description: `Certified refurbished ${item.model.name}, ${item.storage.label}, ${conditionGrade(item.condition)} condition.`,
+    title,
+    description,
+    alternates: { canonical: `/shop/${id}` },
+    openGraph: { title, description, type: "website" },
   };
 }
 
@@ -42,8 +47,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const grade = conditionGrade(item.condition);
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: `${item.model.name} (${item.storage.label})`,
+    description: `Certified refurbished ${item.model.name}, ${item.storage.label}, ${grade} condition.`,
+    brand: { "@type": "Brand", name: item.model.name.split(" ")[0] },
+    itemCondition: "https://schema.org/RefurbishedCondition",
+    offers: {
+      "@type": "Offer",
+      url: `${SITE_URL}/shop/${item.id}`,
+      priceCurrency: "EUR",
+      price: item.listPriceEUR,
+      availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/RefurbishedCondition",
+    },
+  };
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-14">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       <Link href="/shop" className="text-sm font-semibold text-muted transition hover:text-ink">
         ← Back to shop
       </Link>

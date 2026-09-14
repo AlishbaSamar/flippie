@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Shop refurbished devices — flippie",
   description: "Browse tested, certified refurbished iPhones, iPads, and Samsung Galaxy S phones.",
+  alternates: { canonical: "/shop" },
 };
 
 export const dynamic = "force-dynamic";
