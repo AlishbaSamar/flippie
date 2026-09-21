@@ -65,6 +65,9 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput): 
       })),
       success_url: `${base}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/checkout`,
+      // Stripe's default session expiry is 24h — far too long to hold a single-unit
+      // item RESERVED against an abandoned cart. 30 minutes is Stripe's minimum.
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     });
   } catch (err) {
     await prisma.inventoryItem.updateMany({
