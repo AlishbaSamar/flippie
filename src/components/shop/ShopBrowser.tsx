@@ -16,11 +16,19 @@ const SORT_OPTIONS = [
 ] as const;
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+const PAGE_SIZE = 9;
 
-export function ShopBrowser({ items }: { items: InventoryItem[] }) {
-  const [category, setCategory] = useState<(typeof CATEGORY_FILTERS)[number]>("all");
+export function ShopBrowser({
+  items,
+  initialCategory,
+}: {
+  items: InventoryItem[];
+  initialCategory?: DeviceCategory;
+}) {
+  const [category, setCategory] = useState<(typeof CATEGORY_FILTERS)[number]>(initialCategory ?? "all");
   const [grade, setGrade] = useState<(typeof GRADE_FILTERS)[number]>("all");
   const [sort, setSort] = useState<SortValue>("price-asc");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => {
     let result = items.filter((item) => category === "all" || item.model.category === category);
@@ -34,6 +42,22 @@ export function ShopBrowser({ items }: { items: InventoryItem[] }) {
 
     return result;
   }, [items, category, grade, sort]);
+
+  // Reset pagination when filters change, following React's "adjust state
+  // during render" pattern instead of an effect (avoids an extra render pass).
+  const filterKey = `${category}|${grade}|${sort}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setVisibleCount(PAGE_SIZE);
+  }
+
+  const visible = filtered.slice(0, visibleCount);
+
+  function clearFilters() {
+    setCategory("all");
+    setGrade("all");
+  }
 
   return (
     <div>
@@ -80,13 +104,33 @@ export function ShopBrowser({ items }: { items: InventoryItem[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-16 text-center text-muted">No devices match those filters right now.</p>
-      ) : (
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((item) => (
-            <ProductCard key={item.id} item={item} />
-          ))}
+        <div className="py-16 text-center">
+          <p className="text-muted">No devices match those filters right now.</p>
+          <button
+            onClick={clearFilters}
+            className="mt-4 text-sm font-semibold text-primary hover:text-primary-dark"
+          >
+            Clear filters
+          </button>
         </div>
+      ) : (
+        <>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+            {visible.map((item) => (
+              <ProductCard key={item.id} item={item} />
+            ))}
+          </div>
+          {visibleCount < filtered.length && (
+            <div className="mt-10 text-center">
+              <button
+                onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                className="rounded-full border border-border px-6 py-2.5 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary"
+              >
+                Load more devices
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

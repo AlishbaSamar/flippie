@@ -18,14 +18,21 @@ export function ProductCard({ item }: { item: InventoryItem }) {
       href={`/shop/${item.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-white transition hover:border-primary hover:shadow-md"
     >
-      <DeviceThumbnail category={item.model.category} className="h-44" />
-      <div className="flex flex-1 flex-col gap-1 p-5">
-        <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${GRADE_BADGE[grade]}`}>
+      <DeviceThumbnail
+        category={item.model.category}
+        modelName={item.model.name}
+        releaseYear={item.model.releaseYear}
+        className="h-32 sm:h-44"
+      />
+      <div className="flex flex-1 flex-col gap-1 p-3 sm:p-5">
+        <span className={`w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold sm:px-2.5 sm:text-xs ${GRADE_BADGE[grade]}`}>
           {grade}
         </span>
-        <p className="mt-2 font-semibold text-ink group-hover:text-primary">{item.model.name}</p>
-        <p className="text-sm text-muted">{item.storage.label}</p>
-        <p className="mt-auto pt-3 text-xl font-bold text-ink">€{item.listPriceEUR}</p>
+        <p className="mt-2 text-sm font-semibold text-ink group-hover:text-primary sm:text-base">
+          {item.model.name}
+        </p>
+        <p className="text-xs text-muted sm:text-sm">{item.storage.label}</p>
+        <p className="mt-auto pt-3 text-lg font-bold text-ink sm:text-xl">€{item.listPriceEUR}</p>
       </div>
     </Link>
   );

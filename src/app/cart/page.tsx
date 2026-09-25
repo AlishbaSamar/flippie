@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { DeviceThumbnail } from "@/components/DeviceThumbnail";
+import { CATEGORY_LABELS } from "@/lib/category-labels";
 import { conditionGrade } from "@/lib/condition";
 import { useCartItems } from "@/lib/use-cart-items";
+import type { DeviceCategory } from "@/types/device";
+
+const CATEGORIES: DeviceCategory[] = ["iphone", "ipad", "galaxy-s"];
 
 export default function CartPage() {
   const { items, loading, removeItem } = useCartItems();
@@ -15,20 +19,40 @@ export default function CartPage() {
 
       {loading ? null : items.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-border bg-white p-10 text-center">
-          <p className="text-muted">Your cart is empty.</p>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-alt text-2xl">
+            🛒
+          </div>
+          <p className="mt-4 font-semibold text-ink">Your cart is empty</p>
+          <p className="mt-1 text-sm text-muted">Browse our certified refurbished devices to get started.</p>
           <Link
             href="/shop"
-            className="mt-4 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
+            className="mt-6 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
           >
             Browse refurbished devices
           </Link>
+          <div className="mt-8 grid gap-3 border-t border-border pt-6 sm:grid-cols-3">
+            {CATEGORIES.map((category) => (
+              <Link
+                key={category}
+                href={`/shop?category=${category}`}
+                className="rounded-xl border border-border px-4 py-3 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary"
+              >
+                {CATEGORY_LABELS[category]}
+              </Link>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
             {items.map((item) => (
               <li key={item.id} className="flex gap-4 rounded-2xl border border-border bg-white p-4">
-                <DeviceThumbnail category={item.model.category} className="h-24 w-24 shrink-0" />
+                <DeviceThumbnail
+                  category={item.model.category}
+                  modelName={item.model.name}
+                  releaseYear={item.model.releaseYear}
+                  className="h-24 w-24 shrink-0"
+                />
                 <div className="flex flex-1 flex-col">
                   <p className="font-semibold text-ink">{item.model.name}</p>
                   <p className="text-sm text-muted">

@@ -72,7 +72,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </Link>
 
       <div className="mt-6 grid gap-10 md:grid-cols-2">
-        <DeviceThumbnail category={item.model.category} className="h-96" />
+        <DeviceThumbnail
+          category={item.model.category}
+          modelName={item.model.name}
+          releaseYear={item.model.releaseYear}
+          className="h-96"
+        />
 
         <div>
           <h1 className="text-3xl font-semibold text-ink">{item.model.name}</h1>
