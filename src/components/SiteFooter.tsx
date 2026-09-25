@@ -16,13 +16,21 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Contact us", href: `mailto:${CONTACT_EMAIL}` },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Refund & Returns", href: "/refunds" },
+    ],
+  },
 ];
 
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border bg-surface-alt">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="grid gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
             <p className="text-lg font-semibold text-ink">flippie</p>
             <p className="mt-2 max-w-xs text-sm text-muted">
