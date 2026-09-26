@@ -58,6 +58,8 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
   const [storage, setStorage] = useState<StorageOption | null>(null);
   const [condition, setCondition] = useState<Partial<ConditionAnswers>>({});
   const [country, setCountry] = useState(EU_COUNTRIES[0].code);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [isSubmitting, startSubmit] = useTransition();
 
@@ -84,11 +86,15 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
     setModel(null);
     setStorage(null);
     setCondition({});
+    setCustomerName("");
+    setCustomerEmail("");
     setSubmittedId(null);
   }
 
+  const contactComplete = customerName.trim().length > 0 && /\S+@\S+\.\S+/.test(customerEmail);
+
   function acceptOffer() {
-    if (!model || !storage || !conditionComplete || offer === null) return;
+    if (!model || !storage || !conditionComplete || offer === null || !contactComplete) return;
     const countryName = EU_COUNTRIES.find((c) => c.code === country)?.name ?? country;
     startSubmit(async () => {
       const result = await submitPurchase({
@@ -99,6 +105,8 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
         offerEUR: offer,
         countryCode: country,
         countryName,
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
       });
       setSubmittedId(result.id);
     });
@@ -308,27 +316,50 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
               of inspection.
             </p>
 
-            <div className="mx-auto mt-6 max-w-xs text-left">
-              <label className="text-xs font-semibold tracking-wide text-muted uppercase">
-                Where are you shipping from?
-              </label>
-              <select
-                value={country}
-                onChange={(event) => setCountry(event.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
-              >
-                {EU_COUNTRIES.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
+            <div className="mx-auto mt-6 max-w-xs space-y-4 text-left">
+              <div>
+                <label className="text-xs font-semibold tracking-wide text-muted uppercase">Full name</label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(event) => setCustomerName(event.target.value)}
+                  placeholder="Jane Doe"
+                  className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold tracking-wide text-muted uppercase">Email</label>
+                <input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(event) => setCustomerEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+                />
+                <p className="mt-1 text-xs text-muted">We&apos;ll send your confirmation and shipping label here.</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold tracking-wide text-muted uppercase">
+                  Where are you shipping from?
+                </label>
+                <select
+                  value={country}
+                  onChange={(event) => setCountry(event.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+                >
+                  {EU_COUNTRIES.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 onClick={acceptOffer}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !contactComplete}
                 className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Submitting…" : "Accept offer & continue"}

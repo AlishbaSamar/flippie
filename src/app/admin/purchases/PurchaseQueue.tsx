@@ -11,6 +11,8 @@ interface PurchaseListItem {
   status: string;
   offerEUR: number;
   countryName: string;
+  customerName: string;
+  customerEmail: string;
   createdAtLabel: string;
   modelName: string;
   storageLabel: string;
@@ -163,6 +165,17 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
           <p className="mt-1 text-sm text-muted">
             {item.countryName} · Submitted {item.createdAtLabel}
           </p>
+          {(item.customerName || item.customerEmail) && (
+            <p className="mt-1 text-sm text-muted">
+              {item.customerName}
+              {item.customerName && item.customerEmail && " · "}
+              {item.customerEmail && (
+                <a href={`mailto:${item.customerEmail}`} className="text-primary hover:text-primary-dark">
+                  {item.customerEmail}
+                </a>
+              )}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <StatusBadge status={item.status} />

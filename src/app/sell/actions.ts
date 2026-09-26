@@ -1,6 +1,7 @@
 "use server";
 
 import type { Prisma } from "@/generated/prisma/client";
+import { sendTradeInConfirmationEmail } from "@/lib/emails";
 import { prisma } from "@/lib/prisma";
 import type { ConditionAnswers } from "@/types/device";
 
@@ -12,6 +13,8 @@ export interface SubmitPurchaseInput {
   offerEUR: number;
   countryCode: string;
   countryName: string;
+  customerName: string;
+  customerEmail: string;
 }
 
 export async function submitPurchase(input: SubmitPurchaseInput): Promise<{ id: string }> {
@@ -24,8 +27,20 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<{ id: 
       offerEUR: input.offerEUR,
       countryCode: input.countryCode,
       countryName: input.countryName,
+      customerName: input.customerName,
+      customerEmail: input.customerEmail,
       status: "SUBMITTED",
     },
+    include: { model: true },
+  });
+
+  await sendTradeInConfirmationEmail({
+    to: input.customerEmail,
+    customerName: input.customerName,
+    modelName: purchase.model.name,
+    storageLabel: input.storageLabel,
+    offerEUR: input.offerEUR,
+    purchaseId: purchase.id,
   });
 
   return { id: purchase.id };

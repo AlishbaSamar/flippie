@@ -36,6 +36,8 @@ export default async function AdminPurchasesPage() {
       status: purchase.status,
       offerEUR: purchase.offerEUR,
       countryName: purchase.countryName,
+      customerName: purchase.customerName,
+      customerEmail: purchase.customerEmail,
       createdAtLabel: purchase.createdAt.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",

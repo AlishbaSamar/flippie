@@ -1,9 +1,13 @@
 import type Stripe from "stripe";
+import { sendOrderConfirmationEmail } from "@/lib/emails";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
 async function finalizeSession(session: Stripe.Checkout.Session) {
-  const orders = await prisma.order.findMany({ where: { stripeSessionId: session.id, status: "PENDING" } });
+  const orders = await prisma.order.findMany({
+    where: { stripeSessionId: session.id, status: "PENDING" },
+    include: { inventoryItem: { include: { model: true } } },
+  });
   if (orders.length === 0) return;
 
   await prisma.$transaction([
@@ -13,6 +17,17 @@ async function finalizeSession(session: Stripe.Checkout.Session) {
       data: { status: "SOLD" },
     }),
   ]);
+
+  await sendOrderConfirmationEmail({
+    to: orders[0].customerEmail,
+    customerName: orders[0].customerName,
+    items: orders.map((order) => ({
+      name: `${order.inventoryItem.model.name} (${order.inventoryItem.storageLabel})`,
+      priceEUR: order.priceEUR,
+    })),
+    totalEUR: orders.reduce((sum, order) => sum + order.priceEUR, 0),
+    orderReference: session.id.slice(-8).toUpperCase(),
+  });
 }
 
 async function releaseSession(session: Stripe.Checkout.Session) {
