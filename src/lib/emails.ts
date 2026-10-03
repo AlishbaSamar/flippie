@@ -56,6 +56,42 @@ export async function sendTradeInConfirmationEmail(input: {
   });
 }
 
+export async function sendRevisedOfferEmail(input: {
+  to: string;
+  customerName: string;
+  modelName: string;
+  storageLabel: string;
+  originalOfferEUR: number;
+  revisedOfferEUR: number;
+  note: string;
+  purchaseId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>
+      We've checked your <strong>${escapeHtml(input.modelName)} (${escapeHtml(input.storageLabel)})</strong>,
+      and its actual condition didn't quite match what was described, so we need to revise your offer:
+    </p>
+    <p>${escapeHtml(input.note)}</p>
+    <p style="font-size:14px;color:#6b6875;margin:16px 0 4px;">Original offer: €${input.originalOfferEUR}</p>
+    <p style="font-size:28px;font-weight:700;color:#4f3cc9;margin:0 0 16px;">Revised offer: €${input.revisedOfferEUR}</p>
+    <p>
+      Reply to this email to let us know if you'd like to accept the revised offer, or have the device
+      returned to you at no cost instead.
+    </p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.purchaseId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "Your offer has been revised — flippie",
+    html: emailLayout("We need to revise your offer", body),
+  });
+}
+
 export async function sendOrderConfirmationEmail(input: {
   to: string;
   customerName: string;

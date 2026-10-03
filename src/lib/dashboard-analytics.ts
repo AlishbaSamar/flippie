@@ -46,7 +46,9 @@ export async function getKpis() {
       prisma.purchase.aggregate({ _sum: { offerEUR: true }, _count: true }),
       prisma.order.count({ where: { status: "PENDING" } }),
       prisma.inventoryItem.count({ where: { status: "LISTED" } }),
-      prisma.purchase.count({ where: { status: { in: ["SUBMITTED", "APPROVED"] } } }),
+      prisma.purchase.count({
+        where: { status: { in: ["SUBMITTED", "APPROVED", "RECEIVED", "IN_INSPECTION", "REVISED_OFFER_SENT"] } },
+      }),
     ]);
 
   return {

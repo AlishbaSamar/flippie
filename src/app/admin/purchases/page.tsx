@@ -16,7 +16,7 @@ const HISTORY_LIMIT = 30;
 export default async function AdminPurchasesPage() {
   const [pendingRows, historyRows] = await Promise.all([
     prisma.purchase.findMany({
-      where: { status: { in: ["SUBMITTED", "APPROVED"] } },
+      where: { status: { in: ["SUBMITTED", "APPROVED", "RECEIVED", "IN_INSPECTION", "REVISED_OFFER_SENT"] } },
       include: { model: true },
       orderBy: { createdAt: "asc" },
     }),
@@ -39,6 +39,8 @@ export default async function AdminPurchasesPage() {
       customerName: purchase.customerName,
       customerEmail: purchase.customerEmail,
       payoutIban: purchase.payoutIban,
+      revisedOfferEUR: purchase.revisedOfferEUR,
+      revisedOfferNote: purchase.revisedOfferNote,
       createdAtLabel: purchase.createdAt.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",

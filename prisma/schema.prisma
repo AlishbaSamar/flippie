@@ -15,14 +15,22 @@ enum DeviceCategory {
 
 enum InventoryStatus {
   PROCESSING
+  WIPING_DATA
+  REPAIR
+  FINAL_QA
   LISTED
   RESERVED
   SOLD
+  RETURNED
+  QUARANTINE
 }
 
 enum PurchaseStatus {
   SUBMITTED
   APPROVED
+  RECEIVED
+  IN_INSPECTION
+  REVISED_OFFER_SENT
   PAID
   REJECTED
 }
@@ -63,7 +71,7 @@ model InventoryItem {
   imei             String?
   createdAt        DateTime        @default(now())
 
-  orders           Order[]
+  orders Order[]
 
   @@index([status])
   @@index([modelId])
@@ -71,20 +79,22 @@ model InventoryItem {
 }
 
 model Purchase {
-  id            String         @id @default(cuid())
-  model         DeviceModel    @relation(fields: [modelId], references: [id])
-  modelId       String
-  storageGb     Int
-  storageLabel  String
-  condition     Json
-  offerEUR      Int
-  status        PurchaseStatus @default(SUBMITTED)
-  countryCode   String
-  countryName   String
-  customerName  String         @default("")
-  customerEmail String         @default("")
-  payoutIban    String         @default("")
-  createdAt     DateTime       @default(now())
+  id               String         @id @default(cuid())
+  model            DeviceModel    @relation(fields: [modelId], references: [id])
+  modelId          String
+  storageGb        Int
+  storageLabel     String
+  condition        Json
+  offerEUR         Int
+  status           PurchaseStatus @default(SUBMITTED)
+  countryCode      String
+  countryName      String
+  customerName     String         @default("")
+  customerEmail    String         @default("")
+  payoutIban       String         @default("")
+  revisedOfferEUR  Int?
+  revisedOfferNote String         @default("")
+  createdAt        DateTime       @default(now())
 
   @@index([countryCode])
   @@index([createdAt])

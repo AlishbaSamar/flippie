@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { approvePurchase, convertToInventory, rejectPurchase } from "@/app/admin/purchases/actions";
+import {
+  approvePurchase,
+  convertToInventory,
+  markReceived,
+  recordCustomerDeclined,
+  rejectPurchase,
+  sendRevisedOffer,
+  startInspection,
+} from "@/app/admin/purchases/actions";
 import { GRADE_DESCRIPTIONS, conditionGrade } from "@/lib/condition";
 import { formatCurrency } from "@/lib/format";
 import type { ConditionAnswers } from "@/types/device";
@@ -14,6 +22,8 @@ interface PurchaseListItem {
   customerName: string;
   customerEmail: string;
   payoutIban: string;
+  revisedOfferEUR: number | null;
+  revisedOfferNote: string;
   createdAtLabel: string;
   modelName: string;
   storageLabel: string;
@@ -84,23 +94,50 @@ export function PurchaseQueue({ pending, history }: PurchaseQueueProps) {
   );
 }
 
+const STATUS_STYLES: Record<string, string> = {
+  SUBMITTED: "bg-accent/20 text-accent-dark",
+  APPROVED: "bg-primary/10 text-primary",
+  RECEIVED: "bg-primary/10 text-primary",
+  IN_INSPECTION: "bg-primary/10 text-primary",
+  REVISED_OFFER_SENT: "bg-accent/20 text-accent-dark",
+  PAID: "bg-[var(--viz-good)]/15 text-[var(--viz-good-text)]",
+  REJECTED: "bg-[var(--viz-critical)]/10 text-[var(--viz-critical)]",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  SUBMITTED: "Submitted",
+  APPROVED: "Approved",
+  RECEIVED: "Received",
+  IN_INSPECTION: "In inspection",
+  REVISED_OFFER_SENT: "Revised offer sent",
+  PAID: "Purchased",
+  REJECTED: "Rejected",
+};
+
 function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    SUBMITTED: "bg-accent/20 text-accent-dark",
-    APPROVED: "bg-primary/10 text-primary",
-    PAID: "bg-[var(--viz-good)]/15 text-[var(--viz-good-text)]",
-    REJECTED: "bg-[var(--viz-critical)]/10 text-[var(--viz-critical)]",
-  };
-  const labels: Record<string, string> = {
-    SUBMITTED: "Submitted",
-    APPROVED: "Approved",
-    PAID: "Purchased",
-    REJECTED: "Rejected",
-  };
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status] ?? ""}`}>
-      {labels[status] ?? status}
+    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[status] ?? ""}`}>
+      {STATUS_LABELS[status] ?? status}
     </span>
+  );
+}
+
+function RejectButton({
+  onReject,
+  disabled,
+}: {
+  onReject: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onReject}
+      disabled={disabled}
+      className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink transition hover:border-[var(--viz-critical)] hover:text-[var(--viz-critical)] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      Reject
+    </button>
   );
 }
 
@@ -110,24 +147,16 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
   const [listPrice, setListPrice] = useState(String(item.suggestedListPriceEUR));
   const [listNow, setListNow] = useState(true);
   const [imei, setImei] = useState("");
+  const [showRevise, setShowRevise] = useState(false);
+  const [revisedAmount, setRevisedAmount] = useState(String(item.offerEUR));
+  const [revisedNote, setRevisedNote] = useState("");
   const grade = conditionGrade(item.condition);
 
-  function handleApprove() {
+  function run(action: () => Promise<void>) {
     setError(null);
     startTransition(async () => {
       try {
-        await approvePurchase(item.id);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      }
-    });
-  }
-
-  function handleReject() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await rejectPurchase(item.id);
+        await action();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
       }
@@ -145,19 +174,31 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
       setError("IMEI must be exactly 15 digits, or left blank.");
       return;
     }
-    startTransition(async () => {
-      try {
-        await convertToInventory({
-          purchaseId: item.id,
-          listPriceEUR: price,
-          status: listNow ? "LISTED" : "PROCESSING",
-          imei: imei.trim() || undefined,
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong.");
-      }
-    });
+    run(() =>
+      convertToInventory({
+        purchaseId: item.id,
+        listPriceEUR: price,
+        status: listNow ? "LISTED" : "PROCESSING",
+        imei: imei.trim() || undefined,
+      }),
+    );
   }
+
+  function handleSendRevisedOffer() {
+    setError(null);
+    const amount = Number(revisedAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Enter a valid revised offer amount.");
+      return;
+    }
+    if (!revisedNote.trim()) {
+      setError("Add a short note explaining the revision.");
+      return;
+    }
+    run(() => sendRevisedOffer({ purchaseId: item.id, revisedOfferEUR: amount, note: revisedNote.trim() }));
+  }
+
+  const payoutAmount = item.status === "REVISED_OFFER_SENT" && item.revisedOfferEUR ? item.revisedOfferEUR : item.offerEUR;
 
   return (
     <div className="rounded-2xl border border-border bg-white p-5">
@@ -191,10 +232,19 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
         </div>
         <div className="text-right">
           <StatusBadge status={item.status} />
-          <p className="mt-2 text-lg font-semibold text-ink">{formatCurrency(item.offerEUR)}</p>
-          <p className="text-xs text-muted">offer to customer</p>
+          <p className="mt-2 text-lg font-semibold text-ink">{formatCurrency(payoutAmount)}</p>
+          <p className="text-xs text-muted">
+            {item.status === "REVISED_OFFER_SENT" && item.revisedOfferEUR ? "revised offer" : "offer to customer"}
+          </p>
         </div>
       </div>
+
+      {item.status === "REVISED_OFFER_SENT" && item.revisedOfferNote && (
+        <p className="mt-3 rounded-lg bg-surface-alt p-3 text-sm text-muted">
+          <span className="font-semibold text-ink">Revision note:</span> {item.revisedOfferNote} — awaiting
+          customer response.
+        </p>
+      )}
 
       {error && <p className="mt-3 text-sm font-medium text-[var(--viz-critical)]">{error}</p>}
 
@@ -203,68 +253,189 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
           <>
             <button
               type="button"
-              onClick={handleApprove}
+              onClick={() => run(() => approvePurchase(item.id))}
               disabled={isPending}
               className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? "Working…" : "Approve"}
             </button>
-            <button
-              type="button"
-              onClick={handleReject}
-              disabled={isPending}
-              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink transition hover:border-[var(--viz-critical)] hover:text-[var(--viz-critical)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Reject
-            </button>
+            <RejectButton onReject={() => run(() => rejectPurchase(item.id))} disabled={isPending} />
           </>
         )}
 
         {item.status === "APPROVED" && (
+          <>
+            <button
+              type="button"
+              onClick={() => run(() => markReceived(item.id))}
+              disabled={isPending}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Working…" : "Mark as received"}
+            </button>
+            <RejectButton onReject={() => run(() => rejectPurchase(item.id))} disabled={isPending} />
+          </>
+        )}
+
+        {item.status === "RECEIVED" && (
+          <>
+            <button
+              type="button"
+              onClick={() => run(() => startInspection(item.id))}
+              disabled={isPending}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Working…" : "Start inspection"}
+            </button>
+            <RejectButton onReject={() => run(() => rejectPurchase(item.id))} disabled={isPending} />
+          </>
+        )}
+
+        {item.status === "IN_INSPECTION" && !showRevise && (
           <div className="flex w-full flex-wrap items-end gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted">List price (EUR)</label>
-              <input
-                type="number"
-                min={1}
-                value={listPrice}
-                onChange={(event) => setListPrice(event.target.value)}
-                className="mt-1 block w-32 rounded-lg border border-border px-3 py-2 text-sm text-ink"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted">IMEI (optional)</label>
-              <input
-                type="text"
-                value={imei}
-                onChange={(event) => setImei(event.target.value)}
-                placeholder="15 digits"
-                className="mt-1 block w-40 rounded-lg border border-border px-3 py-2 text-sm text-ink"
-              />
-            </div>
-            <label className="flex items-center gap-2 pb-2 text-sm text-ink">
-              <input type="checkbox" checked={listNow} onChange={(event) => setListNow(event.target.checked)} />
-              List immediately
-            </label>
+            <ConvertFields
+              listPrice={listPrice}
+              setListPrice={setListPrice}
+              imei={imei}
+              setImei={setImei}
+              listNow={listNow}
+              setListNow={setListNow}
+            />
             <button
               type="button"
               onClick={handleConvert}
               disabled={isPending}
               className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isPending ? "Working…" : "Confirm payment & add to inventory"}
+              {isPending ? "Working…" : "Condition matches — add to inventory"}
             </button>
             <button
               type="button"
-              onClick={handleReject}
+              onClick={() => setShowRevise(true)}
+              disabled={isPending}
+              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Send revised offer
+            </button>
+            <RejectButton onReject={() => run(() => rejectPurchase(item.id))} disabled={isPending} />
+          </div>
+        )}
+
+        {item.status === "IN_INSPECTION" && showRevise && (
+          <div className="flex w-full flex-wrap items-end gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted">Revised offer (EUR)</label>
+              <input
+                type="number"
+                min={1}
+                value={revisedAmount}
+                onChange={(event) => setRevisedAmount(event.target.value)}
+                className="mt-1 block w-32 rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              />
+            </div>
+            <div className="min-w-48 flex-1">
+              <label className="text-xs font-medium text-muted">Reason for the customer</label>
+              <input
+                type="text"
+                value={revisedNote}
+                onChange={(event) => setRevisedNote(event.target.value)}
+                placeholder="e.g. Screen has a crack not mentioned in the submission"
+                className="mt-1 block w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSendRevisedOffer}
+              disabled={isPending}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Working…" : "Send revised offer"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowRevise(false)}
+              disabled={isPending}
+              className="text-sm font-semibold text-muted transition hover:text-ink"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {item.status === "REVISED_OFFER_SENT" && (
+          <div className="flex w-full flex-wrap items-end gap-3">
+            <ConvertFields
+              listPrice={listPrice}
+              setListPrice={setListPrice}
+              imei={imei}
+              setImei={setImei}
+              listNow={listNow}
+              setListNow={setListNow}
+            />
+            <button
+              type="button"
+              onClick={handleConvert}
+              disabled={isPending}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Working…" : "Customer accepted — add to inventory"}
+            </button>
+            <button
+              type="button"
+              onClick={() => run(() => recordCustomerDeclined(item.id))}
               disabled={isPending}
               className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink transition hover:border-[var(--viz-critical)] hover:text-[var(--viz-critical)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Reject
+              Customer declined
             </button>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function ConvertFields({
+  listPrice,
+  setListPrice,
+  imei,
+  setImei,
+  listNow,
+  setListNow,
+}: {
+  listPrice: string;
+  setListPrice: (value: string) => void;
+  imei: string;
+  setImei: (value: string) => void;
+  listNow: boolean;
+  setListNow: (value: boolean) => void;
+}) {
+  return (
+    <>
+      <div>
+        <label className="text-xs font-medium text-muted">List price (EUR)</label>
+        <input
+          type="number"
+          min={1}
+          value={listPrice}
+          onChange={(event) => setListPrice(event.target.value)}
+          className="mt-1 block w-32 rounded-lg border border-border px-3 py-2 text-sm text-ink"
+        />
+      </div>
+      <div>
+        <label className="text-xs font-medium text-muted">IMEI (optional)</label>
+        <input
+          type="text"
+          value={imei}
+          onChange={(event) => setImei(event.target.value)}
+          placeholder="15 digits"
+          className="mt-1 block w-40 rounded-lg border border-border px-3 py-2 text-sm text-ink"
+        />
+      </div>
+      <label className="flex items-center gap-2 pb-2 text-sm text-ink">
+        <input type="checkbox" checked={listNow} onChange={(event) => setListNow(event.target.checked)} />
+        List immediately
+      </label>
+    </>
   );
 }
