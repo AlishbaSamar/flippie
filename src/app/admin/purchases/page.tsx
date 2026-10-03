@@ -38,6 +38,7 @@ export default async function AdminPurchasesPage() {
       countryName: purchase.countryName,
       customerName: purchase.customerName,
       customerEmail: purchase.customerEmail,
+      payoutIban: purchase.payoutIban,
       createdAtLabel: purchase.createdAt.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",

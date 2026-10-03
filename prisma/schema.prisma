@@ -60,12 +60,14 @@ model InventoryItem {
   listPriceEUR     Int
   status           InventoryStatus @default(LISTED)
   sourcePurchaseId String?
+  imei             String?
   createdAt        DateTime        @default(now())
 
   orders           Order[]
 
   @@index([status])
   @@index([modelId])
+  @@index([imei])
 }
 
 model Purchase {
@@ -81,6 +83,7 @@ model Purchase {
   countryName   String
   customerName  String         @default("")
   customerEmail String         @default("")
+  payoutIban    String         @default("")
   createdAt     DateTime       @default(now())
 
   @@index([countryCode])

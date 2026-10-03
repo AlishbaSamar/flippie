@@ -40,6 +40,11 @@ export default function PrivacyPolicyPage() {
           <li>Name, email address, shipping address, and country, when you sell us a device or place an order</li>
           <li>Device details and condition information you submit when requesting a trade-in offer</li>
           <li>
+            Your IBAN (bank account number), when you sell us a device — this is how we pay you once your
+            device passes inspection. We store this only to process your payout, and only staff who process
+            payouts can access it.
+          </li>
+          <li>
             Payment information when you buy from us — this is collected and processed directly by Stripe, our
             payment provider; we never see or store your full card details
           </li>

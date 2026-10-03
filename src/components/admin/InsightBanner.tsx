@@ -5,6 +5,15 @@ export function InsightBanner({ data }: { data: CountryPerformance[] }) {
   const topGrower = [...data].sort((a, b) => b.growthPct - a.growthPct)[0];
   const topDecliner = [...data].sort((a, b) => a.growthPct - b.growthPct)[0];
 
+  if (!topGrower || !topDecliner) {
+    return (
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+        <p className="text-xs font-semibold tracking-wide text-primary uppercase">SEO &amp; marketing signal</p>
+        <p className="mt-2 text-sm text-ink">No sales recorded yet this month — check back once orders come in.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
       <p className="text-xs font-semibold tracking-wide text-primary uppercase">SEO &amp; marketing signal</p>

@@ -60,6 +60,7 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
   const [country, setCountry] = useState(EU_COUNTRIES[0].code);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [payoutIban, setPayoutIban] = useState("");
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [isSubmitting, startSubmit] = useTransition();
 
@@ -88,10 +89,14 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
     setCondition({});
     setCustomerName("");
     setCustomerEmail("");
+    setPayoutIban("");
     setSubmittedId(null);
   }
 
-  const contactComplete = customerName.trim().length > 0 && /\S+@\S+\.\S+/.test(customerEmail);
+  const contactComplete =
+    customerName.trim().length > 0 &&
+    /\S+@\S+\.\S+/.test(customerEmail) &&
+    /^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(payoutIban.trim().replace(/\s+/g, "").toUpperCase());
 
   function acceptOffer() {
     if (!model || !storage || !conditionComplete || offer === null || !contactComplete) return;
@@ -107,6 +112,7 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
         countryName,
         customerName: customerName.trim(),
         customerEmail: customerEmail.trim(),
+        payoutIban: payoutIban.trim().replace(/\s+/g, "").toUpperCase(),
       });
       setSubmittedId(result.id);
     });
@@ -337,6 +343,19 @@ export function SellWizard({ allModels, initialCategory }: SellWizardProps) {
                   className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
                 />
                 <p className="mt-1 text-xs text-muted">We&apos;ll send your confirmation and shipping label here.</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold tracking-wide text-muted uppercase">
+                  IBAN (for your payout)
+                </label>
+                <input
+                  type="text"
+                  value={payoutIban}
+                  onChange={(event) => setPayoutIban(event.target.value)}
+                  placeholder="DE89 3704 0044 0532 0130 00"
+                  className="mt-1.5 w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+                />
+                <p className="mt-1 text-xs text-muted">We&apos;ll pay this account once your device is checked.</p>
               </div>
               <div>
                 <label className="text-xs font-semibold tracking-wide text-muted uppercase">

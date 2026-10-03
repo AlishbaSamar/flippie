@@ -15,9 +15,14 @@ export interface SubmitPurchaseInput {
   countryName: string;
   customerName: string;
   customerEmail: string;
+  payoutIban: string;
 }
 
 export async function submitPurchase(input: SubmitPurchaseInput): Promise<{ id: string }> {
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(input.payoutIban)) {
+    throw new Error("Enter a valid IBAN.");
+  }
+
   const purchase = await prisma.purchase.create({
     data: {
       modelId: input.modelId,
@@ -29,6 +34,7 @@ export async function submitPurchase(input: SubmitPurchaseInput): Promise<{ id: 
       countryName: input.countryName,
       customerName: input.customerName,
       customerEmail: input.customerEmail,
+      payoutIban: input.payoutIban,
       status: "SUBMITTED",
     },
     include: { model: true },

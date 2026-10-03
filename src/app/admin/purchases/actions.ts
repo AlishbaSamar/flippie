@@ -26,6 +26,7 @@ export interface ConvertToInventoryInput {
   purchaseId: string;
   listPriceEUR: number;
   status: "PROCESSING" | "LISTED";
+  imei?: string;
 }
 
 export async function convertToInventory(input: ConvertToInventoryInput): Promise<void> {
@@ -35,6 +36,11 @@ export async function convertToInventory(input: ConvertToInventoryInput): Promis
   }
   if (!Number.isFinite(input.listPriceEUR) || input.listPriceEUR <= 0) {
     throw new Error("List price must be a positive number.");
+  }
+
+  const imei = input.imei?.trim();
+  if (imei && !/^\d{15}$/.test(imei)) {
+    throw new Error("IMEI must be exactly 15 digits, or left blank.");
   }
 
   await prisma.$transaction([
@@ -47,6 +53,7 @@ export async function convertToInventory(input: ConvertToInventoryInput): Promis
         listPriceEUR: Math.round(input.listPriceEUR),
         status: input.status,
         sourcePurchaseId: purchase.id,
+        imei: imei || null,
       },
     }),
     prisma.purchase.update({ where: { id: purchase.id }, data: { status: "PAID" } }),

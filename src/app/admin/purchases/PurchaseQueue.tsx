@@ -13,6 +13,7 @@ interface PurchaseListItem {
   countryName: string;
   customerName: string;
   customerEmail: string;
+  payoutIban: string;
   createdAtLabel: string;
   modelName: string;
   storageLabel: string;
@@ -108,6 +109,7 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
   const [error, setError] = useState<string | null>(null);
   const [listPrice, setListPrice] = useState(String(item.suggestedListPriceEUR));
   const [listNow, setListNow] = useState(true);
+  const [imei, setImei] = useState("");
   const grade = conditionGrade(item.condition);
 
   function handleApprove() {
@@ -139,12 +141,17 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
       setError("Enter a valid list price.");
       return;
     }
+    if (imei.trim() && !/^\d{15}$/.test(imei.trim())) {
+      setError("IMEI must be exactly 15 digits, or left blank.");
+      return;
+    }
     startTransition(async () => {
       try {
         await convertToInventory({
           purchaseId: item.id,
           listPriceEUR: price,
           status: listNow ? "LISTED" : "PROCESSING",
+          imei: imei.trim() || undefined,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -174,6 +181,11 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
                   {item.customerEmail}
                 </a>
               )}
+            </p>
+          )}
+          {item.payoutIban && (
+            <p className="mt-1 text-sm text-muted">
+              Payout IBAN: <span className="font-mono text-ink">{item.payoutIban}</span>
             </p>
           )}
         </div>
@@ -218,6 +230,16 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
                 value={listPrice}
                 onChange={(event) => setListPrice(event.target.value)}
                 className="mt-1 block w-32 rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted">IMEI (optional)</label>
+              <input
+                type="text"
+                value={imei}
+                onChange={(event) => setImei(event.target.value)}
+                placeholder="15 digits"
+                className="mt-1 block w-40 rounded-lg border border-border px-3 py-2 text-sm text-ink"
               />
             </div>
             <label className="flex items-center gap-2 pb-2 text-sm text-ink">
