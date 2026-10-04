@@ -165,6 +165,7 @@ function pickModel(category: Category): ModelSeed {
 
 async function main() {
   console.log("Clearing existing seed data...");
+  await prisma.returnRequest.deleteMany();
   await prisma.order.deleteMany();
   await prisma.inventoryItem.deleteMany();
   await prisma.purchase.deleteMany();

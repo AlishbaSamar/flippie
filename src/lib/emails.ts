@@ -1,4 +1,5 @@
 import { EMAIL_FROM, resend } from "@/lib/resend";
+import { SITE_URL } from "@/lib/site-url";
 
 function escapeHtml(value: string): string {
   return value
@@ -92,6 +93,100 @@ export async function sendRevisedOfferEmail(input: {
   });
 }
 
+export async function sendReturnRequestedEmail(input: {
+  to: string;
+  customerName: string;
+  itemName: string;
+  returnId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>We've received your return request for <strong>${escapeHtml(input.itemName)}</strong>.</p>
+    <p>We'll review it and get back to you shortly with next steps.</p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.returnId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "We've got your return request — flippie",
+    html: emailLayout("Return request received", body),
+  });
+}
+
+export async function sendReturnApprovedEmail(input: {
+  to: string;
+  customerName: string;
+  itemName: string;
+  returnId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>Your return for <strong>${escapeHtml(input.itemName)}</strong> has been approved.</p>
+    <p>We'll email you a free return shipping label separately. Once we receive and check the device, we'll issue your refund to the original payment method.</p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.returnId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "Your return has been approved — flippie",
+    html: emailLayout("Return approved", body),
+  });
+}
+
+export async function sendReturnRejectedEmail(input: {
+  to: string;
+  customerName: string;
+  itemName: string;
+  note: string;
+  returnId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>We've reviewed your return request for <strong>${escapeHtml(input.itemName)}</strong>, and unfortunately we're not able to process it.</p>
+    <p>${escapeHtml(input.note)}</p>
+    <p>If you think this is a mistake, reply to this email and we'll take another look.</p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.returnId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "Update on your return request — flippie",
+    html: emailLayout("Return request update", body),
+  });
+}
+
+export async function sendRefundIssuedEmail(input: {
+  to: string;
+  customerName: string;
+  itemName: string;
+  refundAmountEUR: number;
+  returnId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>We've refunded <strong>€${input.refundAmountEUR}</strong> for <strong>${escapeHtml(input.itemName)}</strong> to your original payment method. It usually takes a few business days to appear.</p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.returnId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "Your refund is on its way — flippie",
+    html: emailLayout("Refund issued", body),
+  });
+}
+
 export async function sendOrderConfirmationEmail(input: {
   to: string;
   customerName: string;
@@ -119,6 +214,10 @@ export async function sendOrderConfirmationEmail(input: {
       <tr><td style="padding-top:12px;font-weight:700;">Total</td><td style="padding-top:12px;font-weight:700;text-align:right;">€${input.totalEUR}</td></tr>
     </table>
     <p style="font-size:13px;color:#6b6875;">Reference: ${input.orderReference}</p>
+    <p style="font-size:13px;color:#6b6875;">
+      Need to return something? <a href="${SITE_URL}/returns" style="color:#4f3cc9;">Start a return</a> with this
+      reference and your email.
+    </p>
   `;
 
   await sendSafely({

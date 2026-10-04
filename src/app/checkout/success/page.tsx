@@ -35,6 +35,14 @@ export default async function CheckoutSuccessPage({
       >
         Continue shopping
       </Link>
+      {isPaid && (
+        <p className="mt-4 text-sm text-muted">
+          Need to return something?{" "}
+          <Link href="/returns" className="font-semibold text-primary hover:text-primary-dark">
+            Start a return
+          </Link>
+        </p>
+      )}
     </main>
   );
 }

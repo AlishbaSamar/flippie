@@ -46,6 +46,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/inventory" className="text-sm font-semibold text-primary transition hover:text-primary-dark">
             Inventory →
           </Link>
+          <Link href="/admin/returns" className="text-sm font-semibold text-primary transition hover:text-primary-dark">
+            Returns →
+          </Link>
           <form action={logout}>
             <button type="submit" className="text-sm font-semibold text-muted transition hover:text-ink">
               Sign out

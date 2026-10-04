@@ -48,6 +48,7 @@ export default function PrivacyPolicyPage() {
             Payment information when you buy from us — this is collected and processed directly by Stripe, our
             payment provider; we never see or store your full card details
           </li>
+          <li>Return reason and details you submit when requesting a return, used to process your refund</li>
           <li>Correspondence when you contact us for support</li>
         </ul>
         <p>

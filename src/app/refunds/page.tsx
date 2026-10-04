@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalSection } from "@/components/legal/LegalSection";
 import { CONTACT_EMAIL } from "@/lib/site-url";
 
@@ -20,11 +21,11 @@ export default function RefundsPage() {
         <p>
           As an EU consumer buying online, you have a legal right to withdraw from your purchase within{" "}
           <strong>14 days</strong> of receiving your device, without giving a reason, under the EU Consumer
-          Rights Directive. To use this right, contact us within 14 days of delivery at{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-primary hover:text-primary-dark">
-            {CONTACT_EMAIL}
-          </a>{" "}
-          and we&apos;ll confirm the return process.
+          Rights Directive. To use this right,{" "}
+          <Link href="/returns" className="font-semibold text-primary hover:text-primary-dark">
+            start a return
+          </Link>{" "}
+          with your order reference and email, and we&apos;ll confirm the return process.
         </p>
         <ul className="list-disc space-y-1.5 pl-5">
           <li>The device should be returned in the same condition it was delivered in.</li>
@@ -35,12 +36,11 @@ export default function RefundsPage() {
 
       <LegalSection title="If a device arrives faulty or not as described">
         <p>
-          Contact us straight away at{" "}
-          <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-primary hover:text-primary-dark">
-            {CONTACT_EMAIL}
-          </a>{" "}
-          with your order reference and a description of the issue. We&apos;ll arrange a free return and a full
-          refund or replacement.
+          <Link href="/returns" className="font-semibold text-primary hover:text-primary-dark">
+            Start a return
+          </Link>{" "}
+          straight away with your order reference and a description of the issue. We&apos;ll arrange a free
+          return and a full refund or replacement.
         </p>
       </LegalSection>
 

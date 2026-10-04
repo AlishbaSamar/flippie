@@ -41,6 +41,22 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  REFUNDED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  RECEIVED
+  REFUNDED
+  REJECTED
+}
+
+enum ReturnReason {
+  CHANGED_MIND
+  FAULTY
+  NOT_AS_DESCRIBED
+  OTHER
 }
 
 model DeviceModel {
@@ -117,7 +133,26 @@ model Order {
   stripeSessionId String?
   createdAt       DateTime      @default(now())
 
+  returnRequests ReturnRequest[]
+
   @@index([countryCode])
   @@index([createdAt])
   @@index([stripeSessionId])
+}
+
+model ReturnRequest {
+  id              String       @id @default(cuid())
+  order           Order        @relation(fields: [orderId], references: [id])
+  orderId         String
+  reason          ReturnReason
+  customerNote    String       @default("")
+  status          ReturnStatus @default(REQUESTED)
+  adminNote       String       @default("")
+  refundAmountEUR Int?
+  stripeRefundId  String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([orderId])
+  @@index([status])
 }
