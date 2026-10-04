@@ -13,11 +13,12 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "support@f
 
 /**
  * Legal entity details for the Privacy Policy, Terms, and Refund Policy.
- * The Denmark company registration isn't finished yet, so this is an
- * explicit placeholder — update it here (one place) once the CVR number,
- * registered address, and legal name are final. Do not fill this in with
- * invented details; an honest placeholder is safer than a fabricated one.
+ * Registered with the Danish Business Authority (Erhvervsstyrelsen) on
+ * 28 September 2026. The registered business address hasn't been provided
+ * yet — update it here (one place) once available. Do not fill this in
+ * with invented details; an honest placeholder is safer than a fabricated
+ * one.
  */
-export const COMPANY_LEGAL_NAME = "flippie ApS (company registration pending)";
-export const COMPANY_ADDRESS = "[Registered business address — to be added once Denmark company registration is complete]";
-export const COMPANY_REGISTRATION = "[CVR registration number — to be added once available]";
+export const COMPANY_LEGAL_NAME = "Flippie ApS";
+export const COMPANY_ADDRESS = "[Registered business address — to be added]";
+export const COMPANY_REGISTRATION = "CVR 46805348";

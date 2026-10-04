@@ -96,14 +96,15 @@ export default function PrivacyPolicyPage() {
           <li>Request deletion of your data, where we&apos;re not required to keep it</li>
           <li>Object to or restrict certain processing</li>
           <li>Request a copy of your data in a portable format</li>
-          <li>Lodge a complaint with your national data protection authority</li>
+          <li>Lodge a complaint with a data protection authority</li>
         </ul>
         <p>
           To exercise any of these rights, contact us at{" "}
           <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-primary hover:text-primary-dark">
             {CONTACT_EMAIL}
           </a>
-          .
+          . As flippie is established in Denmark, our lead supervisory authority is the Danish Data Protection
+          Agency (Datatilsynet, <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:text-primary-dark">datatilsynet.dk</a>) — you&apos;re also free to lodge a complaint with the data protection authority in your own EU country instead.
         </p>
       </LegalSection>
 
