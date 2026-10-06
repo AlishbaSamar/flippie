@@ -14,11 +14,8 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "support@f
 /**
  * Legal entity details for the Privacy Policy, Terms, and Refund Policy.
  * Registered with the Danish Business Authority (Erhvervsstyrelsen) on
- * 28 September 2026. The registered business address hasn't been provided
- * yet — update it here (one place) once available. Do not fill this in
- * with invented details; an honest placeholder is safer than a fabricated
- * one.
+ * 28 September 2026.
  */
 export const COMPANY_LEGAL_NAME = "Flippie ApS";
-export const COMPANY_ADDRESS = "[Registered business address — to be added]";
+export const COMPANY_ADDRESS = "Græsmarken 34, 2860 Søborg, Denmark";
 export const COMPANY_REGISTRATION = "CVR 46805348";
