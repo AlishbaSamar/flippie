@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { SHOP_ENABLED } from "@/lib/feature-flags";
 import { CONTACT_EMAIL } from "@/lib/site-url";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Shop",
     links: [
-      { label: "Browse refurbished devices", href: "/shop" },
+      ...(SHOP_ENABLED ? [{ label: "Browse refurbished devices", href: "/shop" }] : []),
       { label: "Sell your device", href: "/sell" },
     ],
   },
@@ -57,7 +58,7 @@ export function SiteFooter() {
 
         <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} flippie. All rights reserved.</p>
-          <p>Secure checkout powered by Stripe.</p>
+          {SHOP_ENABLED && <p>Secure checkout powered by Stripe.</p>}
         </div>
       </div>
     </footer>

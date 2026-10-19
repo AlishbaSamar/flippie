@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { CartBadge } from "@/components/CartBadge";
 import { Mascot } from "@/components/Mascot";
+import { SHOP_ENABLED } from "@/lib/feature-flags";
 
 const NAV_LINKS = [
   { href: "/sell", label: "Sell your device" },
-  { href: "/shop", label: "Shop refurbished" },
+  ...(SHOP_ENABLED ? [{ href: "/shop", label: "Shop refurbished" }] : []),
 ];
 
 export function SiteHeader() {
@@ -23,7 +24,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <CartBadge />
+          {SHOP_ENABLED && <CartBadge />}
           <Link
             href="/sell"
             className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"

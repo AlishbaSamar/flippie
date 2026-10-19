@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORY_LABELS } from "@/lib/category-labels";
 import { mapDeviceModel, toDbCategory } from "@/lib/db-mappers";
+import { SHOP_ENABLED } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site-url";
 import type { DeviceCategory } from "@/types/device";
@@ -35,10 +36,19 @@ const TRUST_POINTS = [
     title: "Fast, direct payment",
     body: "No waiting for a stranger to reply. You deal with flippie from offer to payout.",
   },
-  {
-    title: "Secure checkout",
-    body: "Payments are processed by Stripe — your card details never touch our servers.",
-  },
+  ...(SHOP_ENABLED
+    ? [
+        {
+          title: "Secure checkout",
+          body: "Payments are processed by Stripe — your card details never touch our servers.",
+        },
+      ]
+    : [
+        {
+          title: "No third-party sellers",
+          body: "You're dealing directly with flippie, not a stranger on a marketplace.",
+        },
+      ]),
 ];
 
 const STEPS = [
@@ -103,12 +113,14 @@ export default async function Home() {
               >
                 Get your instant quote
               </Link>
-              <Link
-                href="/shop"
-                className="rounded-full border border-border bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary"
-              >
-                Shop refurbished devices
-              </Link>
+              {SHOP_ENABLED && (
+                <Link
+                  href="/shop"
+                  className="rounded-full border border-border bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary"
+                >
+                  Shop refurbished devices
+                </Link>
+              )}
             </div>
           </div>
           <div className="rounded-3xl border border-border bg-white p-8 shadow-sm">

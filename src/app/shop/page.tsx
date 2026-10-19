@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ShopBrowser } from "@/components/shop/ShopBrowser";
+import { ShopComingSoon } from "@/components/shop/ShopComingSoon";
 import { mapInventoryItem } from "@/lib/db-mappers";
+import { SHOP_ENABLED } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import type { DeviceCategory } from "@/types/device";
 
@@ -22,6 +24,18 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
   const initialCategory = VALID_CATEGORIES.find((category) => category === params.category);
 
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-14">
+      <h1 className="text-3xl font-semibold text-ink">Shop refurbished devices</h1>
+      <p className="mt-2 max-w-xl text-muted">
+        Every device is bought, tested, and graded by us before it&apos;s listed — no third-party sellers.
+      </p>
+      {SHOP_ENABLED ? <ShopBrowserSection initialCategory={initialCategory} /> : <ShopComingSoon />}
+    </main>
+  );
+}
+
+async function ShopBrowserSection({ initialCategory }: { initialCategory?: DeviceCategory }) {
   const rows = await prisma.inventoryItem.findMany({
     where: { status: "LISTED" },
     include: { model: true },
@@ -30,14 +44,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const items = rows.map(mapInventoryItem);
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-14">
-      <h1 className="text-3xl font-semibold text-ink">Shop refurbished devices</h1>
-      <p className="mt-2 max-w-xl text-muted">
-        Every device is bought, tested, and graded by us before it&apos;s listed — no third-party sellers.
-      </p>
-      <div className="mt-8">
-        <ShopBrowser items={items} initialCategory={initialCategory} />
-      </div>
-    </main>
+    <div className="mt-8">
+      <ShopBrowser items={items} initialCategory={initialCategory} />
+    </div>
   );
 }

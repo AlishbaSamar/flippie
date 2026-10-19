@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AddToCartButton } from "@/components/shop/AddToCartButton";
 import { DeviceThumbnail } from "@/components/DeviceThumbnail";
 import {
@@ -12,6 +12,7 @@ import {
   SCREEN_LABELS,
 } from "@/lib/condition";
 import { mapInventoryItem } from "@/lib/db-mappers";
+import { SHOP_ENABLED } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -27,6 +28,7 @@ async function loadItem(id: string) {
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  if (!SHOP_ENABLED) return {};
   const { id } = await params;
   const item = await loadItem(id);
   if (!item) return {};
@@ -41,6 +43,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  if (!SHOP_ENABLED) redirect("/shop");
+
   const { id } = await params;
   const item = await loadItem(id);
   if (!item) notFound();
