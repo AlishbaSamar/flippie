@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { SHOP_ENABLED } from "@/lib/feature-flags";
-import { CONTACT_EMAIL } from "@/lib/site-url";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -15,7 +14,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "FAQ", href: "/faq" },
       { label: "Start a return", href: "/returns" },
-      { label: "Contact us", href: `mailto:${CONTACT_EMAIL}` },
+      { label: "Contact us", href: "/contact" },
     ],
   },
   {

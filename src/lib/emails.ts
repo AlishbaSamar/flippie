@@ -1,5 +1,5 @@
 import { EMAIL_FROM, resend } from "@/lib/resend";
-import { SITE_URL } from "@/lib/site-url";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site-url";
 
 function escapeHtml(value: string): string {
   return value
@@ -256,4 +256,32 @@ export async function sendOrderConfirmationEmail(input: {
     subject: "Order confirmed — flippie",
     html: emailLayout("Thank you for your order!", body),
   });
+}
+
+/**
+ * Unlike the transactional emails above, this isn't allowed to fail silently —
+ * there's no database record of a contact message, so if sending fails the
+ * visitor's message would otherwise just vanish. Callers should surface the
+ * thrown error to the visitor instead of swallowing it.
+ */
+export async function sendContactMessageEmail(input: { name: string; email: string; message: string }): Promise<void> {
+  const body = `
+    <p><strong>From:</strong> ${escapeHtml(input.name)} (${escapeHtml(input.email)})</p>
+    <p style="white-space:pre-wrap;">${escapeHtml(input.message)}</p>
+  `;
+
+  const subjectName = input.name.replace(/[\r\n]/g, " ").slice(0, 80);
+
+  const { error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to: CONTACT_EMAIL,
+    replyTo: input.email,
+    subject: `New message from ${subjectName} — flippie contact form`,
+    html: emailLayout("New contact form message", body),
+  });
+
+  if (error) {
+    console.error("Contact email send failed:", error);
+    throw new Error("Couldn't send your message right now — please try again in a moment.");
+  }
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CONTACT_EMAIL } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "FAQ — flippie",
@@ -69,9 +68,9 @@ export default function FaqPage() {
       <h1 className="text-3xl font-semibold text-ink">Frequently asked questions</h1>
       <p className="mt-2 text-muted">
         Can&apos;t find what you&apos;re looking for?{" "}
-        <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-primary hover:text-primary-dark">
+        <Link href="/contact" className="font-semibold text-primary hover:text-primary-dark">
           Get in touch
-        </a>
+        </Link>
         .
       </p>
 
