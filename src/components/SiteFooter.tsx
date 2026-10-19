@@ -4,7 +4,7 @@ import { CONTACT_EMAIL } from "@/lib/site-url";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
-    title: "Shop",
+    title: SHOP_ENABLED ? "Shop" : "Sell",
     links: [
       ...(SHOP_ENABLED ? [{ label: "Browse refurbished devices", href: "/shop" }] : []),
       { label: "Sell your device", href: "/sell" },
