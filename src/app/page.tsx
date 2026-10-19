@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -160,15 +161,23 @@ export default async function Home() {
               )}
             </div>
           </div>
-          <div className="rounded-3xl border border-border bg-white p-8 shadow-sm">
-            <DeviceThumbnail category="iphone" modelName="iPhone 14" releaseYear={2022} className="mb-4 h-28 w-full" />
-            <p className="text-sm font-semibold text-muted">Example instant offer</p>
-            <p className="mt-4 text-3xl font-semibold text-ink">iPhone 14 · 128GB</p>
-            <p className="mt-1 text-sm text-muted">Works perfectly · Flawless screen · Battery 90%+</p>
-            <p className="mt-6 text-5xl font-bold text-primary">
-              <AnimatedNumber value={312} format="currency" duration={1.1} />
-            </p>
-            <p className="mt-2 text-xs text-muted">Estimate — actual offers vary by condition and market.</p>
+          <div className="relative">
+            <Image
+              src="/images/hero-mascot.jpg"
+              alt="A smiling flippie user holding up the flippie app on her phone, sitting next to the flippie mascot"
+              width={1122}
+              height={1402}
+              priority
+              className="w-full rounded-3xl border border-border object-cover shadow-sm"
+            />
+            <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/95 p-4 shadow-md backdrop-blur-sm sm:right-auto sm:w-60">
+              <p className="text-xs font-semibold text-muted">Example instant offer</p>
+              <p className="mt-1 text-sm font-semibold text-ink">iPhone 14 · 128GB</p>
+              <p className="mt-2 text-3xl font-bold text-primary">
+                <AnimatedNumber value={312} format="currency" duration={1.1} />
+              </p>
+              <p className="mt-1 text-[11px] text-muted">Estimate — actual offers vary by condition and market.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -190,7 +199,18 @@ export default async function Home() {
 
       <section id="how-it-works" className="scroll-mt-24 border-b border-border bg-surface-alt py-16">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-2xl font-semibold text-ink">How selling to flippie works</h2>
+          <div className="grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
+            <h2 className="text-2xl font-semibold text-ink">How selling to flippie works</h2>
+            <Reveal className="justify-self-center md:justify-self-end">
+              <Image
+                src="/images/offer-screen.jpg"
+                alt="A phone screen showing the flippie app with an offer ready to accept"
+                width={1122}
+                height={1402}
+                className="w-40 rounded-2xl border border-border object-cover shadow-sm sm:w-48"
+              />
+            </Reveal>
+          </div>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {STEPS.map((step, index) => (
               <Reveal key={step.title} delay={index * 0.08}>
@@ -234,14 +254,27 @@ export default async function Home() {
 
       <section className="border-t border-border bg-surface-alt py-16">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="text-2xl font-semibold text-ink">Why choose flippie</h2>
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {TRUST_POINTS.map((point, index) => (
-              <Reveal key={point.title} delay={index * 0.08}>
-                <h3 className="text-lg font-semibold text-ink">{point.title}</h3>
-                <p className="mt-2 text-sm text-muted">{point.body}</p>
-              </Reveal>
-            ))}
+          <div className="grid gap-10 md:grid-cols-[1fr_1.3fr] md:items-center">
+            <Reveal>
+              <Image
+                src="/images/why-choose-friends.jpg"
+                alt="Two friends smiling while looking at the flippie app together"
+                width={1448}
+                height={1086}
+                className="w-full rounded-2xl border border-border object-cover shadow-sm"
+              />
+            </Reveal>
+            <div>
+              <h2 className="text-2xl font-semibold text-ink">Why choose flippie</h2>
+              <div className="mt-8 grid gap-8 sm:grid-cols-2">
+                {TRUST_POINTS.map((point, index) => (
+                  <Reveal key={point.title} delay={index * 0.08}>
+                    <h3 className="text-lg font-semibold text-ink">{point.title}</h3>
+                    <p className="mt-2 text-sm text-muted">{point.body}</p>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-8">
             <p className="text-sm text-muted">Have questions before you get started?</p>
@@ -273,7 +306,14 @@ export default async function Home() {
 
       <section className="bg-gradient-to-br from-primary to-primary-dark py-16 text-white">
         <Reveal className="mx-auto max-w-2xl px-6 text-center">
-          <h2 className="text-2xl font-semibold md:text-3xl">Ready to see what your device is worth?</h2>
+          <Image
+            src="/images/cta-mascot.jpg"
+            alt="The flippie mascot celebrating"
+            width={1254}
+            height={1254}
+            className="mx-auto h-28 w-28 rounded-2xl object-cover shadow-lg sm:h-32 sm:w-32"
+          />
+          <h2 className="mt-6 text-2xl font-semibold md:text-3xl">Ready to see what your device is worth?</h2>
           <p className="mt-3 text-white/80">
             Get an instant offer in under two minutes — no account, no obligation.
           </p>
