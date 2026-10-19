@@ -41,6 +41,11 @@ export default async function AdminPurchasesPage() {
       payoutIban: purchase.payoutIban,
       revisedOfferEUR: purchase.revisedOfferEUR,
       revisedOfferNote: purchase.revisedOfferNote,
+      shippingLabelUrl: purchase.shippingLabelUrl,
+      shippingTrackingNumber: purchase.shippingTrackingNumber,
+      shippingLabelSentAtLabel: purchase.shippingLabelSentAt
+        ? purchase.shippingLabelSentAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+        : null,
       createdAtLabel: purchase.createdAt.toLocaleDateString("en-GB", {
         day: "numeric",
         month: "short",

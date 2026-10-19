@@ -8,6 +8,7 @@ import {
   recordCustomerDeclined,
   rejectPurchase,
   sendRevisedOffer,
+  sendShippingLabel,
   startInspection,
 } from "@/app/admin/purchases/actions";
 import { GRADE_DESCRIPTIONS, conditionGrade } from "@/lib/condition";
@@ -24,6 +25,9 @@ interface PurchaseListItem {
   payoutIban: string;
   revisedOfferEUR: number | null;
   revisedOfferNote: string;
+  shippingLabelUrl: string | null;
+  shippingTrackingNumber: string;
+  shippingLabelSentAtLabel: string | null;
   createdAtLabel: string;
   modelName: string;
   storageLabel: string;
@@ -150,6 +154,9 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
   const [showRevise, setShowRevise] = useState(false);
   const [revisedAmount, setRevisedAmount] = useState(String(item.offerEUR));
   const [revisedNote, setRevisedNote] = useState("");
+  const [showLabelForm, setShowLabelForm] = useState(false);
+  const [labelUrl, setLabelUrl] = useState(item.shippingLabelUrl ?? "");
+  const [trackingNumber, setTrackingNumber] = useState(item.shippingTrackingNumber);
   const grade = conditionGrade(item.condition);
 
   function run(action: () => Promise<void>) {
@@ -196,6 +203,18 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
       return;
     }
     run(() => sendRevisedOffer({ purchaseId: item.id, revisedOfferEUR: amount, note: revisedNote.trim() }));
+  }
+
+  function handleSendLabel() {
+    setError(null);
+    if (!/^https?:\/\/\S+$/.test(labelUrl.trim())) {
+      setError("Enter a valid label URL (starting with http:// or https://).");
+      return;
+    }
+    run(() =>
+      sendShippingLabel({ purchaseId: item.id, labelUrl: labelUrl.trim(), trackingNumber: trackingNumber.trim() }),
+    );
+    setShowLabelForm(false);
   }
 
   const payoutAmount = item.status === "REVISED_OFFER_SENT" && item.revisedOfferEUR ? item.revisedOfferEUR : item.offerEUR;
@@ -263,8 +282,8 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
           </>
         )}
 
-        {item.status === "APPROVED" && (
-          <>
+        {item.status === "APPROVED" && !showLabelForm && (
+          <div className="flex w-full flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => run(() => markReceived(item.id))}
@@ -273,8 +292,59 @@ function PurchaseCard({ item }: { item: PurchaseListItem }) {
             >
               {isPending ? "Working…" : "Mark as received"}
             </button>
+            <button
+              type="button"
+              onClick={() => setShowLabelForm(true)}
+              disabled={isPending}
+              className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {item.shippingLabelSentAtLabel ? "Resend shipping label" : "Send shipping label"}
+            </button>
             <RejectButton onReject={() => run(() => rejectPurchase(item.id))} disabled={isPending} />
-          </>
+            {item.shippingLabelSentAtLabel && (
+              <p className="w-full text-xs text-muted">Label sent {item.shippingLabelSentAtLabel}</p>
+            )}
+          </div>
+        )}
+
+        {item.status === "APPROVED" && showLabelForm && (
+          <div className="flex w-full flex-wrap items-end gap-3">
+            <div className="min-w-56 flex-1">
+              <label className="text-xs font-medium text-muted">Label URL</label>
+              <input
+                type="text"
+                value={labelUrl}
+                onChange={(event) => setLabelUrl(event.target.value)}
+                placeholder="https://..."
+                className="mt-1 block w-full rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted">Tracking number (optional)</label>
+              <input
+                type="text"
+                value={trackingNumber}
+                onChange={(event) => setTrackingNumber(event.target.value)}
+                className="mt-1 block w-40 rounded-lg border border-border px-3 py-2 text-sm text-ink"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleSendLabel}
+              disabled={isPending}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Working…" : "Send label"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLabelForm(false)}
+              disabled={isPending}
+              className="text-sm font-semibold text-muted transition hover:text-ink"
+            >
+              Cancel
+            </button>
+          </div>
         )}
 
         {item.status === "RECEIVED" && (

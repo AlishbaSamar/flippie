@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@/generated/prisma/client";
-import { sendRevisedOfferEmail } from "@/lib/emails";
+import { sendRevisedOfferEmail, sendShippingLabelEmail } from "@/lib/emails";
 import { prisma } from "@/lib/prisma";
 
 export async function approvePurchase(id: string): Promise<void> {
@@ -30,6 +30,45 @@ export async function markReceived(id: string): Promise<void> {
     throw new Error("Only approved purchases can be marked as received.");
   }
   await prisma.purchase.update({ where: { id }, data: { status: "RECEIVED" } });
+  revalidatePath("/admin/purchases");
+}
+
+export interface SendShippingLabelInput {
+  purchaseId: string;
+  labelUrl: string;
+  trackingNumber?: string;
+}
+
+export async function sendShippingLabel(input: SendShippingLabelInput): Promise<void> {
+  const purchase = await prisma.purchase.findUniqueOrThrow({
+    where: { id: input.purchaseId },
+    include: { model: true },
+  });
+  if (purchase.status !== "APPROVED") {
+    throw new Error("Only approved purchases can get a shipping label.");
+  }
+
+  const labelUrl = input.labelUrl.trim();
+  if (!/^https?:\/\/\S+$/.test(labelUrl)) {
+    throw new Error("Enter a valid label URL (starting with http:// or https://).");
+  }
+  const trackingNumber = input.trackingNumber?.trim() ?? "";
+
+  await prisma.purchase.update({
+    where: { id: purchase.id },
+    data: { shippingLabelUrl: labelUrl, shippingTrackingNumber: trackingNumber, shippingLabelSentAt: new Date() },
+  });
+
+  await sendShippingLabelEmail({
+    to: purchase.customerEmail,
+    customerName: purchase.customerName,
+    modelName: purchase.model.name,
+    storageLabel: purchase.storageLabel,
+    labelUrl,
+    trackingNumber,
+    purchaseId: purchase.id,
+  });
+
   revalidatePath("/admin/purchases");
 }
 

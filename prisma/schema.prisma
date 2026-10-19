@@ -95,22 +95,25 @@ model InventoryItem {
 }
 
 model Purchase {
-  id               String         @id @default(cuid())
-  model            DeviceModel    @relation(fields: [modelId], references: [id])
-  modelId          String
-  storageGb        Int
-  storageLabel     String
-  condition        Json
-  offerEUR         Int
-  status           PurchaseStatus @default(SUBMITTED)
-  countryCode      String
-  countryName      String
-  customerName     String         @default("")
-  customerEmail    String         @default("")
-  payoutIban       String         @default("")
-  revisedOfferEUR  Int?
-  revisedOfferNote String         @default("")
-  createdAt        DateTime       @default(now())
+  id                     String         @id @default(cuid())
+  model                  DeviceModel    @relation(fields: [modelId], references: [id])
+  modelId                String
+  storageGb              Int
+  storageLabel           String
+  condition              Json
+  offerEUR               Int
+  status                 PurchaseStatus @default(SUBMITTED)
+  countryCode            String
+  countryName            String
+  customerName           String         @default("")
+  customerEmail          String         @default("")
+  payoutIban             String         @default("")
+  revisedOfferEUR        Int?
+  revisedOfferNote       String         @default("")
+  shippingLabelUrl       String?
+  shippingTrackingNumber String         @default("")
+  shippingLabelSentAt    DateTime?
+  createdAt              DateTime       @default(now())
 
   @@index([countryCode])
   @@index([createdAt])

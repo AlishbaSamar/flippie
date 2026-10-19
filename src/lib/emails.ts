@@ -57,6 +57,36 @@ export async function sendTradeInConfirmationEmail(input: {
   });
 }
 
+export async function sendShippingLabelEmail(input: {
+  to: string;
+  customerName: string;
+  modelName: string;
+  storageLabel: string;
+  labelUrl: string;
+  trackingNumber: string;
+  purchaseId: string;
+}): Promise<void> {
+  if (!input.to) return;
+
+  const body = `
+    <p>Hi ${escapeHtml(input.customerName) || "there"},</p>
+    <p>Your shipping label for your <strong>${escapeHtml(input.modelName)} (${escapeHtml(input.storageLabel)})</strong> is ready.</p>
+    <p style="margin:20px 0;">
+      <a href="${escapeHtml(input.labelUrl)}" style="display:inline-block;background:#4f3cc9;color:#fff;font-weight:700;padding:10px 20px;border-radius:9999px;text-decoration:none;">Download your label</a>
+    </p>
+    ${input.trackingNumber ? `<p style="font-size:14px;color:#6b6875;">Tracking number: <strong style="color:#14121f;">${escapeHtml(input.trackingNumber)}</strong></p>` : ""}
+    <p>Print the label (it includes a QR code you can also show at a drop-off point), attach it to your package, and send your device in. We'll email you once it arrives.</p>
+    <p style="font-size:13px;color:#6b6875;">Reference: ${input.purchaseId.slice(0, 8).toUpperCase()}</p>
+  `;
+
+  await sendSafely({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: "Your shipping label is ready — flippie",
+    html: emailLayout("Your shipping label is ready", body),
+  });
+}
+
 export async function sendRevisedOfferEmail(input: {
   to: string;
   customerName: string;
