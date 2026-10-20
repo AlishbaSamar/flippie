@@ -6,10 +6,11 @@
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://flippie-beta.vercel.app";
 
 /**
- * Support contact address shown in the footer and FAQ. Placeholder until the
- * client's domain and real mailbox are set up — update this one line then.
+ * Support contact address shown in the footer, FAQ, and contact form. Prefer
+ * setting NEXT_PUBLIC_CONTACT_EMAIL in the environment; this is just the
+ * fallback so local/preview environments don't silently point at a dead inbox.
  */
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "support@flippie.com";
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "flippiesupport@gmail.com";
 
 /**
  * Legal entity details for the Privacy Policy, Terms, and Refund Policy.
