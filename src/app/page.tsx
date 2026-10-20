@@ -19,7 +19,7 @@ const ORGANIZATION_JSON_LD = {
   url: SITE_URL,
   description:
     "flippie buys used iPhones, iPads, and Samsung Galaxy S phones directly from customers across Europe, then resells them as certified refurbished devices.",
-  areaServed: "EU",
+  areaServed: { "@type": "Place", name: "Europe" },
 };
 
 const WEBSITE_JSON_LD = {
@@ -168,6 +168,7 @@ export default async function Home() {
               width={1122}
               height={1402}
               priority
+              sizes="(min-width: 768px) 540px, 100vw"
               className="w-full rounded-3xl border border-border object-cover shadow-sm"
             />
             <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/95 p-4 shadow-md backdrop-blur-sm sm:right-auto sm:w-60">
@@ -207,6 +208,7 @@ export default async function Home() {
                 alt="A phone screen showing the flippie app with an offer ready to accept"
                 width={1122}
                 height={1402}
+                sizes="192px"
                 className="w-40 rounded-2xl border border-border object-cover shadow-sm sm:w-48"
               />
             </Reveal>
@@ -261,6 +263,7 @@ export default async function Home() {
                 alt="Two friends smiling while looking at the flippie app together"
                 width={1448}
                 height={1086}
+                sizes="(min-width: 768px) 470px, 100vw"
                 className="w-full rounded-2xl border border-border object-cover shadow-sm"
               />
             </Reveal>
@@ -311,6 +314,7 @@ export default async function Home() {
             alt="The flippie mascot celebrating"
             width={1254}
             height={1254}
+            sizes="128px"
             className="mx-auto h-28 w-28 rounded-2xl object-cover shadow-lg sm:h-32 sm:w-32"
           />
           <h2 className="mt-6 text-2xl font-semibold md:text-3xl">Ready to see what your device is worth?</h2>
